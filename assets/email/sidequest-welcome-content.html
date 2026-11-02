@@ -1,0 +1,20 @@
+<div style="background:#101c1e;color:#f0e8d8;padding:36px 28px;font-family:Georgia,serif;line-height:1.65;text-align:left;">
+<p style="margin:0 0 22px;color:#dfbb7c;font-size:15px;letter-spacing:4px;">SIDEQUEST</p>
+<h1 style="font-family:Georgia,serif;color:#f0e8d8;font-size:30px;font-weight:normal;line-height:1.2;">Welcome to Willow Market.</h1>
+{% if person|lookup:'preferred_companion' == 'ember' %}
+<h2 style="color:#e79153;font-weight:normal;">Ember is glad you're here.</h2>
+<p>A little courage goes a long way. Your fiery dragon companion brings a bold spirit to the everyday desk.</p>
+{% elif person|lookup:'preferred_companion' == 'moss' %}
+<h2 style="color:#9bbd79;font-weight:normal;">Make a quiet corner with Moss.</h2>
+<p>Small pauses count. Your gentle slime companion brings a calmer mood to your workspace.</p>
+{% elif person|lookup:'preferred_companion' == 'bolt' %}
+<h2 style="color:#80b8d1;font-weight:normal;">Bolt is ready for your next idea.</h2>
+<p>There is always something to discover. Your curious robot companion is here for the questions, sketches, and experiments.</p>
+{% else %}
+<h2 style="color:#dfbb7c;font-weight:normal;">Your next companion is waiting.</h2>
+<p>Meet Ember, Moss, and Bolt. Visit the Oracle when you return to the village to find the companion that fits your desk.</p>
+{% endif %}
+<p>These letters will bring companion news and small updates from the village. You can explore the Market, talk to the Oracle, or browse the shop at your own pace.</p>
+<p style="margin-top:28px;">See you around the village,<br>The SIDEQUEST team</p>
+<p style="font-family:Arial,sans-serif;font-size:12px;color:#b3c1b8;border-top:1px solid #40534c;padding-top:20px;">SIDEQUEST is a demo experience. Companions are fictional, checkout is simulated, and no payment or shipment takes place.</p>
+</div>

@@ -57,7 +57,7 @@ test("every on-screen village destination opens from its canvas hotspot", async 
   expect(errors).toEqual([]);
 });
 
-test("the Post Office form stays explicitly simulated without horizontal overflow", async ({ page }) => {
+test("the Post Office form stays explicitly simulated without horizontal overflow", async ({ page }, testInfo) => {
   await page.goto("/");
   await expect(page.getByTestId("village-map")).toHaveAttribute("data-ready", "true");
   await page.getByRole("button", { name: "Post Office", exact: true }).click();
@@ -73,7 +73,7 @@ test("the Post Office form stays explicitly simulated without horizontal overflo
   await expect(page.getByText("No subscription was created")).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("button", { name: "Post Office", exact: true })).toBeFocused();
-  await page.screenshot({ path: "post-office.png" });
+  await page.screenshot({ path: testInfo.outputPath("post-office.png") });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
 });
 

@@ -5,9 +5,9 @@
 - `next dev` rewrites `next-env.d.ts` (dev vs. build type paths). Never commit that change.
 
 ## Village map (WORLD-01)
-- Layout source of truth: `src/game/world/villageMap.ts` (40×25 tile map, 20 logical px per tile, 800×500 world) and `src/game/world/locations.ts` (footprints, entrances, hit areas, label anchors). `src/game/world/village.test.ts` enforces path connectivity, footprint/hit-area containment, non-overlap, and the label safe band (x 120–680, y 30–470).
-- Village art is procedural canvas-2D pixel art in `src/game/art/`, painted at 400×250 and scaled ×2 with `pixelArt: true`: integer `fillRect` only, fixed RNG seed, no text on the canvas.
-- Signpost labels are aria-hidden DOM overlays in `src/features/world/WorldClient.tsx`; the location nav buttons are the accessible equivalent.
+- Layout source of truth: `src/game/world/villageMap.ts` (40×25 tile map, 16 logical px per tile, 640×400 world) and `src/game/world/locations.ts` (footprints, entrances, hit areas). `src/game/world/village.test.ts` enforces path connectivity, footprint/hit-area containment, and non-overlap; movement/pathfinding/decor tests protect walkability.
+- Village art is procedural canvas-2D pixel art in `src/game/art/`, with fixed RNG seeds, layered ground/foreground textures, y-sorted sprites, painted signboards, and separate glow/vignette effects. Preserve the current art, layout, and responsive camera with `pixelArt: true`.
+- `src/features/game/GameShell.tsx` owns the full-screen HUD and accessible location buttons. Keep the shared store layout as a cart provider; shop/product routes supply their own navigation and main element.
 - E2E tests wait for `[data-testid="village-map"][data-ready="true"]` before clicking canvas hotspots.
 
 ## Tooling
