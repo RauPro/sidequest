@@ -8,6 +8,8 @@
   },
   "scripts": {
     "dev": "next dev",
+    "images:export": "node scripts/export-product-images.mjs",
+    "prebuild": "npm run images:export",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
@@ -31,6 +33,7 @@
     "@types/react-dom": "19.3.0",
     "eslint": "9.39.5",
     "eslint-config-next": "16.4.4",
+    "sharp": "0.35.5",
     "typescript": "6.0.3",
     "vitest": "5.1.0"
   }
