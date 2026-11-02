@@ -40,16 +40,16 @@ npm run test:e2e
 - A three-product demo catalog, starter recommendation rule, bag controls, and simulated checkout.
 - Companion product pages, public PNG images, and the Klaviyo catalog feed at `/catalog/klaviyo.json`.
 - Oracle choices persisted locally, with optional profile saves through the independently gated `/api/oracle/preferences` endpoint.
-- Validated `/api/identify`, `/api/events`, and `/api/subscribe` contracts with no-network demo mode and gated live adapters.
+- Validated `/api/identify`, `/api/events`, and `/api/subscribe` contracts with no-network demo mode, invited profile/event adapters, and a public newsletter mode protected by BotID and double opt-in.
 - Unit, integration, and browser test coverage for the foundation.
 
 ## Implementation boundaries
 
-The map and commerce work can evolve independently of the integration adapters. Live Klaviyo profile, event, and subscription requests are implemented behind `SIDEQUEST_MODE=live`, valid private configuration, and `KLAVIYO_LIVE_ALLOWED_EMAILS` (a comma-separated test-recipient allowlist). Demo remains the default and makes no external requests.
+The map and commerce work can evolve independently of the integration adapters. Live Klaviyo requests require `SIDEQUEST_MODE=live` and valid private configuration. `KLAVIYO_SUBSCRIPTION_ACCESS=public` opens newsletter signup on Vercel with BotID Basic and a verified double-opt-in list. Public signup never overwrites profile preferences. Identification, events, and invited subscriptions continue to require `KLAVIYO_LIVE_ALLOWED_EMAILS`. Demo remains the default and makes no external provider requests.
 
 Oracle profile saving uses its own `ORACLE_PROFILE_MODE` and `ORACLE_PROFILE_ALLOWED_EMAILS`, so enabling it does not enable subscriptions or events. See [CUSTOMER-AGENT.md](CUSTOMER-AGENT.md) for the verified Oracle release and [PRODUCT-PAGES.md](PRODUCT-PAGES.md) for the catalog contract. Automatic event dispatch from shopping actions, the shopper-facing chat widget, and environmental animation remain future work.
 
-Profile upserts return verified IDs; events and subscriptions report accepted/pending rather than claiming delivery. Subscription preferences are saved before the consent request. No automatic retry occurs after an uncertain subscription outcome. Production release still requires durable abuse controls and account-side verification; the allowlist is a development gate, not authentication.
+Profile upserts return verified IDs; events and subscriptions report accepted/pending rather than claiming delivery. Invited subscription preferences are saved before the consent request; public signup delegates confirmation to Klaviyo without a preliminary profile write. No automatic retry occurs after an uncertain subscription outcome. Opening existing-profile updates to the public still requires verified account ownership; a test allowlist is not authentication.
 
 See [KLAVIYO-INTEGRATION.md](KLAVIYO-INTEGRATION.md) for request contracts, current account setup, verification evidence, and the remaining rollout steps.
 

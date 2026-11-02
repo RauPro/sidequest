@@ -5,6 +5,7 @@ import { Panel } from "@/components/ui/Panel";
 
 export function SubscriptionForm() {
   const [mode, setMode] = useState<"demo" | "live" | null>(null);
+  const [confirmationRequired, setConfirmationRequired] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
@@ -17,6 +18,7 @@ export function SubscriptionForm() {
         const result = await response.json();
         if (result.mode !== "demo" && result.mode !== "live") throw new Error("Subscription is temporarily unavailable.");
         setMode(result.mode);
+        setConfirmationRequired(result.confirmationRequired === true);
       })
       .catch(error => { if (!controller.signal.aborted) setMessage(error.message); });
     return () => controller.abort();
@@ -41,13 +43,16 @@ export function SubscriptionForm() {
         setMessage("Demo request validated. No subscription was created and no email was sent.");
       } else if (result.status === "accepted" && result.operation === "subscribe") {
         setSubmitted(true);
-        setMessage("Your request was accepted for processing. If confirmation is required, check your inbox. Subscription is not yet verified here.");
+        setMessage(result.confirmationRequired === true
+          ? "Your request was accepted. Check your inbox to confirm your subscription if you haven’t already."
+          : "Your request was accepted for processing. If confirmation is required, check your inbox. Subscription is not yet verified here.");
       } else throw new Error("The server returned an unexpected status.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "The request could not be completed.");
     } finally { submitting.current = false; setPending(false); }
   }
   return <Panel title="Post Office"><p>Receive companion news and letters from Willow Market.</p>{mode === "demo" && <p>This is a demo: no subscription or email delivery takes place.</p>}
+    {confirmationRequired && <p>Confirm your email to join. You can unsubscribe at any time.</p>}
     <form onSubmit={submit}>
       <label htmlFor="newsletter-email">Email address</label>
       <input id="newsletter-email" name="email" type="email" autoComplete="email" maxLength={254} required aria-describedby="subscription-status" />

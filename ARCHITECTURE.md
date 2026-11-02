@@ -113,12 +113,13 @@ A successful demo result is HTTP 200 with `status: "simulated"`, `mode: "demo"`,
 | Variable | Visibility | Required now? | Purpose |
 | --- | --- | --- | --- |
 | `SIDEQUEST_MODE` | Server | Defaults to `demo` | Select demo or live profile/event/subscription behavior |
+| `KLAVIYO_SUBSCRIPTION_ACCESS` | Server | Defaults to `invited` | `public` opens only BotID-protected, double-opt-in newsletter signup on Vercel |
 | `ORACLE_PROFILE_MODE` | Server | Defaults to `demo` | Independently select demo or live Oracle preference saves |
 | `ORACLE_PROFILE_ALLOWED_EMAILS` | Server only | Required for live Oracle saves | Invited tester emails; empty blocks profile saves |
 | `KLAVIYO_PRIVATE_API_KEY` | Server only | No in demo; validated in live | Profile, event, subscription, and Oracle requests |
 | `KLAVIYO_LIST_ID` | Server only | No in demo; validated in live | Intended newsletter list |
 | `KLAVIYO_API_REVISION` | Server only | No in demo; validated in live | Pinned provider contract; template uses `2026-10-15` |
-| `KLAVIYO_LIVE_ALLOWED_EMAILS` | Server only | Required for live testing | Comma-separated test recipients; empty blocks live requests |
+| `KLAVIYO_LIVE_ALLOWED_EMAILS` | Server only | Required for invited live operations | Comma-separated test recipients; empty blocks identify/events and invited subscriptions |
 | `NEXT_PUBLIC_KLAVIYO_SITE_ID` | Public | No | Reserved for a future supported onsite/chat loader; currently unused |
 
 The revision was checked against Klaviyo's profile, event, and subscription documentation on 2026-11-02. A key for those planned operations needs the endpoint-required profile/event/list/subscription write scopes; consult the [integration brief](SIDEQUEST-Zone-Purposes-and-Klaviyo-Setup.md) and current provider docs before enabling delivery.

@@ -1,5 +1,5 @@
 import "server-only";
-import { getIntegrationMode, getKlaviyoConfig } from "@/server/env";
+import { getIntegrationMode, getKlaviyoConfig, getSubscriptionAccess } from "@/server/env";
 import type { DemoIntegrationResult, IntegrationOperation } from "@/domain/events";
 
 export class IntegrationError extends Error {
@@ -14,11 +14,14 @@ export function demoResult(operation: IntegrationOperation): DemoIntegrationResu
   return mode === "demo" ? { status: "simulated", mode, operation, delivered: false } : null;
 }
 
-export function liveConfig(email: string) {
+export function liveConfig(email: string, subscription = false) {
   let config;
   try { config = getKlaviyoConfig(); } catch {
     throw new IntegrationError(503, "missing_configuration", "The live integration is not configured.");
   }
+  // Only the bot-protected subscription route can accept a public email address.
+  // Profile updates and custom events retain their separate invited-recipient gate.
+  if (subscription && getSubscriptionAccess() === "public") return config;
   // Development gate: live delivery is limited to deliberately configured test recipients.
   const allowed = (process.env.KLAVIYO_LIVE_ALLOWED_EMAILS ?? "").split(",").map(value => value.trim().toLowerCase()).filter(Boolean);
   if (!allowed.includes(email.trim().toLowerCase())) {
@@ -31,7 +34,7 @@ type RequestOptions = { path: "/api/profile-import" | "/api/events" | "/api/prof
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export async function klaviyoRequest({ path, body, email, replaySafe, expected }: RequestOptions): Promise<Response> {
-  const config = liveConfig(email);
+  const config = liveConfig(email, path === "/api/profile-subscription-bulk-create-jobs");
   const encoded = JSON.stringify(body); // Reuse the exact body and event identity on retries.
   const deadline = Date.now() + 15_000;
   for (let attempt = 0; attempt < 3; attempt++) {

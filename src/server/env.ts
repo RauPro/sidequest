@@ -5,6 +5,10 @@ export function getIntegrationMode() {
   return z.enum(["demo", "live"]).parse(process.env.SIDEQUEST_MODE ?? "demo");
 }
 
+export function getSubscriptionAccess() {
+  return z.enum(["invited", "public"]).parse(process.env.KLAVIYO_SUBSCRIPTION_ACCESS ?? "invited");
+}
+
 export function getKlaviyoConfig() {
   return z.object({
     privateKey: z.string().trim().min(1),
