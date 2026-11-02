@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { decorObstacles } from "./decor";
-import { isWalkableKind, TILE_SIZE, tileAt, tileRectToWorld, visitorSpawn } from "./villageMap";
+import { isWalkableKind, MAP_COLS, MAP_ROWS, TILE_SIZE, tileAt, tileRectToWorld, visitorSpawn } from "./villageMap";
 import { locations } from "./locations";
 
 const overlaps = (a: { x: number; y: number; width: number; height: number }, b: { x: number; y: number; width: number; height: number }) =>
@@ -10,7 +10,7 @@ describe("village decor obstacles", () => {
   it("never overlap an entrance, bridge or stairs tile", () => {
     const guarded = new Set<string>();
     for (const l of locations) guarded.add(`${l.entrance.col},${l.entrance.row}`);
-    for (let r = 0; r < 25; r++) for (let c = 0; c < 40; c++) {
+    for (let r = 0; r < MAP_ROWS; r++) for (let c = 0; c < MAP_COLS; c++) {
       const k = tileAt(c, r);
       if (k === "bridge" || k === "stairs") guarded.add(`${c},${r}`);
     }
