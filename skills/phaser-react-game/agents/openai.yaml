@@ -1,0 +1,4 @@
+interface:
+  display_name: "Phaser + React Games"
+  short_description: "Build Phaser worlds with reliable React integration"
+  default_prompt: "Use $phaser-react-game to implement the interactive village and its React interface."

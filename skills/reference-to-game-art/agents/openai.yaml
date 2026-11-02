@@ -1,0 +1,4 @@
+interface:
+  display_name: "Reference to Game Art"
+  short_description: "Prepare layered art, sprites, and Tiled world data"
+  default_prompt: "Use $reference-to-game-art to turn this reference into assets for a playable 2D village."
