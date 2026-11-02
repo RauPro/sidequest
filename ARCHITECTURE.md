@@ -75,7 +75,7 @@ tests/e2e/                      Production browser journeys
 skills/                         Versioned agent skills
 ```
 
-Pure logic tests sit beside the code they exercise. Empty public asset directories are tracked with `.gitkeep`; the village artwork is procedural and lives in `src/game/art/`, so no raster source files exist yet.
+Pure logic tests sit beside the code they exercise. Empty public asset directories are tracked with `.gitkeep`; the current village artwork is procedural and lives in `src/game/art/`. Raster scenery and sprite assets may be added as the village moves closer to `ui-concepts/sidequest.png`.
 
 ## Module boundaries
 
@@ -130,7 +130,7 @@ The browser has no independent demo/live toggle. The subscription form reads onl
 
 Editable Aseprite/Tiled source belongs under `assets/source/`; exported textures/maps and product images belong under `public/`. Phaser loads ordinary URLs such as `/game/player.png`. Preserve atlas and tileset references when exporting. Base-path/CDN behavior must be checked if a future deployment introduces either.
 
-The village scene is original code-drawn pixel art (`src/game/art/`) painted from a tested 40×25 tile map with 16-pixel tiles. Destination names are painted signboards in the artwork, while the location navigation stays the accessible equivalent; the stage exposes a generated aria-label description of the destinations. The visitor walks with arrow keys/WASD or tap-to-move, collides with tiles/decor, and enters nearby places with E/Space/Enter. React panels disable game input while forms are open and return focus when closed. `/shop` provides the direct route without loading the game scene. Commerce forms, feedback, and controls use HTML.
+The village scene is currently code-drawn pixel art (`src/game/art/`) painted from a tested 40×25 tile map with 16-pixel tiles; `ui-concepts/sidequest.png` is its visual target, and the map size, tile size, and art pipeline may change to match it. Destination names are painted signboards in the artwork, while the location navigation stays the accessible equivalent; the stage exposes a generated aria-label description of the destinations. The visitor walks with arrow keys/WASD or tap-to-move, collides with tiles/decor, and enters nearby places with E/Space/Enter. React panels disable game input while forms are open and return focus when closed. `/shop` provides the direct route without loading the game scene. Commerce forms, feedback, and controls use HTML.
 
 ## Persistence and hosting
 
