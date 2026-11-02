@@ -18,6 +18,6 @@ export default defineConfig({
     url: "http://127.0.0.1:3100",
     reuseExistingServer: false,
     timeout: 180_000,
-    env: { SIDEQUEST_MODE: "demo", NEXT_TELEMETRY_DISABLED: "1" },
+    env: { SIDEQUEST_MODE: "demo", ORACLE_PROFILE_MODE: "demo", NEXT_TELEMETRY_DISABLED: "1" },
   },
 });
