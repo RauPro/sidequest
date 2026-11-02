@@ -2,7 +2,7 @@
 
 ## Account configuration
 
-- Skill: `SIDEQUEST Oracle recommendations` at <https://www.klaviyo.com/kagent/skill/sidequest-oracle-recommendations/details>.
+- Published skill (Live): `SIDEQUEST Oracle recommendations` at <https://www.klaviyo.com/kagent/skill/sidequest-oracle-recommendations/details>.
 - Custom tool: `Get SIDEQUEST companions` (`custom:kBQBB4s7DsNY`). GET <https://sidequest.raul.engineer/catalog/klaviyo.json>, no credentials or customer variables. Keep permissions **Only in skills**.
 - Attached built-in tool: `Get Profile`. Read `preferred_companion`, `desk_mood`, and `visual_style` only for an identified shopper.
 - Do not use the generic Search Shop Catalog tool: it targets Converza's storefront, not SIDEQUEST.
@@ -38,4 +38,19 @@ References: [Klaviyo custom tools](https://help.klaviyo.com/hc/en-us/articles/51
 
 The custom catalog tool returned HTTP 200 from the public SIDEQUEST feed. The new skill returned Moss ($18) with its correct link for an anonymous calm/under-$20 request, and correctly found no match under $10. For the user-selected identified test profile, Get Profile found no stored Oracle properties; the response reported that absence rather than inventing a saved choice.
 
-The website implementation is committed and tested, but has not yet been deployed. Automatic approval review rejected uploading the existing Klaviyo private key to Vercel production and enabling persistent live profile writes without explicit authorization for that secret, destination, and scope. The user was asked to approve the production connection. Until approved and deployed, live Oracle preference saves and the saved-value end-to-end test remain pending; do not report them as complete.
+## Production verification — November 2, 2026
+
+The user explicitly approved the server-only private key in Vercel production and live Oracle writes limited to their chosen test address. The approved environment configuration is now active, and the tested release is deployed at <https://sidequest.raul.engineer> (Vercel deployment `dpl_5KWKe5EALR2A8VjHeq55jZK3aXZx`). The private key is not committed, exposed to the browser, or used to activate subscriptions.
+
+Verified end to end:
+
+- The public `/shop` Oracle form saved a calm choice and displayed a confirmed-save message.
+- Direct Klaviyo readback confirmed `preferred_companion=moss`, `desk_mood=calm`, `visual_style=nature` on the authorized test profile.
+- Subscription state before and after the save was identical.
+- In a fresh identified playground session, the published skill read those saved values, recommended Moss at $18 USD, and returned the correct public product link.
+- A follow-up explicit request for a bold dragon under $25 returned Ember at $24; direct readback confirmed the saved Moss/calm/nature preference was unchanged.
+- A production request for an address outside the invited list returned HTTP 403 `tester_not_enabled`.
+- The product feed remains public and returns all three products.
+- Typecheck, lint, 39 unit/integration tests and 22 desktop/mobile browser tests passed for the implementation.
+
+The agent's shopper-facing channel remains off. The Camp widget and shopper authentication are not installed by this change. The website profile-save flow and the skill's identified-profile behavior are connected and verified; using that identity in live web chat remains a separate launch step.
