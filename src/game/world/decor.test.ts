@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { decorObstacles } from "./decor";
-import { isWalkableKind, tileAt, tileRectToWorld, visitorSpawn } from "./villageMap";
+import { isWalkableKind, MAP_COLS, MAP_ROWS, TILE_SIZE, tileAt, tileRectToWorld, visitorSpawn } from "./villageMap";
 import { locations } from "./locations";
 
 const overlaps = (a: { x: number; y: number; width: number; height: number }, b: { x: number; y: number; width: number; height: number }) =>
@@ -10,7 +10,7 @@ describe("village decor obstacles", () => {
   it("never overlap an entrance, bridge or stairs tile", () => {
     const guarded = new Set<string>();
     for (const l of locations) guarded.add(`${l.entrance.col},${l.entrance.row}`);
-    for (let r = 0; r < 25; r++) for (let c = 0; c < 40; c++) {
+    for (let r = 0; r < MAP_ROWS; r++) for (let c = 0; c < MAP_COLS; c++) {
       const k = tileAt(c, r);
       if (k === "bridge" || k === "stairs") guarded.add(`${c},${r}`);
     }
@@ -23,10 +23,10 @@ describe("village decor obstacles", () => {
   it("keeps every entrance reachable when obstacle-covered tiles count as blocked", () => {
     const obstacles = decorObstacles();
     const walkable = (c: number, r: number) => {
-      const central = { x: c * 16 + 4, y: r * 16 + 4, width: 8, height: 8 };
+      const central = { x: c * TILE_SIZE + TILE_SIZE / 4, y: r * TILE_SIZE + TILE_SIZE / 4, width: TILE_SIZE / 2, height: TILE_SIZE / 2 };
       return isWalkableKind(tileAt(c, r)) && !obstacles.some((o) => overlaps(o, central));
     };
-    const spawn = { col: Math.floor(visitorSpawn.x / 16), row: Math.floor(visitorSpawn.y / 16) };
+    const spawn = { col: Math.floor(visitorSpawn.x / TILE_SIZE), row: Math.floor(visitorSpawn.y / TILE_SIZE) };
     const reached = new Set([`${spawn.col},${spawn.row}`]);
     const queue = [spawn];
     while (queue.length) {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  MAP_COLS, MAP_ROWS, WORLD_HEIGHT, WORLD_WIDTH, isPathKind, isWalkableKind, plazaCenter,
+  MAP_COLS, MAP_ROWS, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH, isPathKind, isWalkableKind, plazaCenter,
   reachableTiles, tileAt, tileKey, tileLegend, tileRectToWorld, villageProps, villageRows, visitorSpawn,
 } from "./villageMap";
 import { locationIds, locations, villageMapDescription } from "./locations";
@@ -13,14 +13,14 @@ const containsRect = (outer: WorldRect, inner: WorldRect) =>
   inner.x >= outer.x && inner.y >= outer.y && inner.x + inner.width <= outer.x + outer.width && inner.y + inner.height <= outer.y + outer.height;
 
 describe("village tile map", () => {
-  it("is a 40x25 grid using only legend characters", () => {
+  it("is a MAP_COLS x MAP_ROWS grid using only legend characters", () => {
     expect(villageRows).toHaveLength(MAP_ROWS);
     for (const [r, row] of villageRows.entries()) {
       expect(row, `row ${r}`).toHaveLength(MAP_COLS);
       for (const ch of row) expect(Object.hasOwn(tileLegend, ch), `row ${r} "${ch}"`).toBe(true);
     }
-    expect(WORLD_WIDTH).toBe(640);
-    expect(WORLD_HEIGHT).toBe(400);
+    expect(WORLD_WIDTH).toBe(MAP_COLS * TILE_SIZE);
+    expect(WORLD_HEIGHT).toBe(MAP_ROWS * TILE_SIZE);
   });
 
   it("covers every building tile with a non-overlapping footprint", () => {
@@ -89,7 +89,7 @@ describe("village locations", () => {
   });
 
   it("spawns the visitor on walkable plaza clear of hit areas, reaching all entrances", () => {
-    const spawnTile = { col: Math.floor(visitorSpawn.x / 16), row: Math.floor(visitorSpawn.y / 16) };
+    const spawnTile = { col: Math.floor(visitorSpawn.x / TILE_SIZE), row: Math.floor(visitorSpawn.y / TILE_SIZE) };
     expect(tileAt(spawnTile.col, spawnTile.row)).toBe("plaza");
     for (const { hitArea } of locations) expect(containsRect(hitArea, { ...visitorSpawn, width: 1, height: 1 })).toBe(false);
     const reached = reachableTiles(spawnTile, isWalkableKind);

@@ -313,7 +313,7 @@ The following is a proposed integration contract. Final event names, fields, and
 ### Visual reference
 
 - [SIDEQUEST concept image](ui-concepts/sidequest.png)
-- The image establishes the direction, not an exact implementation requirement. Simplify scene detail as necessary to preserve usability and finish the core journey.
+- The image is the visual target for the village and HUD. Match its composition, perspective, scene detail, lighting, characters, and interface framing as closely as practical, without sacrificing usability, accessibility, or the core journey.
 
 
 
