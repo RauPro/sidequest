@@ -5,10 +5,20 @@ import { MAP_COLS, MAP_ROWS, TileKind, isPathKind, tileAt } from "../world/villa
 const at = (c: number, r: number) => tileAt(c, r);
 const isLand = (k: TileKind | undefined) => k !== undefined && k !== "water" && k !== "waterfall" && k !== "bridge";
 
-function grassTile(ctx: Ctx, rng: Rng, x: number, y: number) {
-  rect(ctx, x, y, ART_TILE, ART_TILE, p.grass[0]);
-  for (let i = 0; i < 7; i++) pixel(ctx, x + Math.floor(rng() * 10), y + Math.floor(rng() * 10), pick(rng, p.grass));
-  if (rng() < 0.5) rect(ctx, x + Math.floor(rng() * 8), y + 2 + Math.floor(rng() * 6), 1, 2, p.grass[1]);
+function bankFoam(ctx: Ctx, rng: Rng, x: number, y: number, dir: 1 | -1) {
+  for (let i = 0; i < 10; i++) {
+    if (rng() > 0.45) continue;
+    const color = () => (rng() < 0.25 ? p.foam : p.water[2]);
+    pixel(ctx, x + dir * Math.floor(rng() * 2), y + i, color());
+    if (rng() < 0.2) pixel(ctx, x + dir * Math.floor(rng() * 2), y + Math.min(9, i + 1), color());
+  }
+}
+
+function grassTile(ctx: Ctx, rng: Rng, x: number, y: number, lifted = false) {
+  const ramp = lifted ? p.grassHigh : p.grass;
+  rect(ctx, x, y, ART_TILE, ART_TILE, ramp[0]);
+  for (let i = 0; i < 7; i++) pixel(ctx, x + Math.floor(rng() * 10), y + Math.floor(rng() * 10), pick(rng, ramp));
+  if (rng() < 0.5) rect(ctx, x + Math.floor(rng() * 8), y + 2 + Math.floor(rng() * 6), 1, 2, ramp[1]);
 }
 
 function forestTile(ctx: Ctx, rng: Rng, x: number, y: number) {
@@ -20,8 +30,8 @@ function forestTile(ctx: Ctx, rng: Rng, x: number, y: number) {
   for (let i = 0; i < 3; i++) pixel(ctx, x + Math.floor(rng() * 10), y + Math.floor(rng() * 10), p.forestDark);
 }
 
-function flowersTile(ctx: Ctx, rng: Rng, x: number, y: number) {
-  grassTile(ctx, rng, x, y);
+function flowersTile(ctx: Ctx, rng: Rng, x: number, y: number, lifted = false) {
+  grassTile(ctx, rng, x, y, lifted);
   for (let i = 0; i < 4; i++) {
     const fx = x + 1 + Math.floor(rng() * 8);
     const fy = y + 1 + Math.floor(rng() * 8);
@@ -81,13 +91,20 @@ function bridgeTile(ctx: Ctx, x: number, y: number) {
 
 function cliffTile(ctx: Ctx, rng: Rng, x: number, y: number) {
   rect(ctx, x, y, ART_TILE, ART_TILE, p.cliff[1]);
-  for (let band = 0; band < 4; band++) {
-    const by = y + band * 2 + Math.floor(rng() * 3);
-    const bx = x + Math.floor(rng() * 5);
-    rect(ctx, bx, by, 3 + Math.floor(rng() * 4), 1, pick(rng, [p.cliff[0], p.cliff[2]]));
+  // irregular slabs: lit top-left edge, darker lower-right
+  for (let i = 0; i < 3; i++) {
+    const sx = x + Math.floor(rng() * 5);
+    const sy = y + Math.floor(rng() * 6);
+    const sw = 3 + Math.floor(rng() * 4);
+    const sh = 2 + Math.floor(rng() * 2);
+    rect(ctx, sx, sy, sw, sh, p.cliff[0]);
+    rect(ctx, sx, sy, sw, 1, p.cliff[2]);
+    rect(ctx, sx + sw - 1, sy + 1, 1, sh - 1, "#2e2d36");
+    if (rng() < 0.5) pixel(ctx, sx, sy + sh - 1, "#2e2d36");
   }
-  rect(ctx, x + Math.floor(rng() * 6), y + 1 + Math.floor(rng() * 3), 1, 2, p.cliff[2]);
   if (rng() < 0.7) rect(ctx, x + 2 + Math.floor(rng() * 6), y + 1, 1, 3 + Math.floor(rng() * 4), "#2e2d36");
+  for (let i = 0; i < 2; i++) pixel(ctx, x + Math.floor(rng() * 10), y + Math.floor(rng() * 10), p.moss);
+  rect(ctx, x, y + 8, ART_TILE, 2, "rgba(8, 10, 14, 0.22)");
 }
 
 export function paintTerrain(ctx: Ctx, rng: Rng) {
@@ -96,16 +113,17 @@ export function paintTerrain(ctx: Ctx, rng: Rng) {
       const kind = at(c, r);
       const x = c * ART_TILE;
       const y = r * ART_TILE;
+      const lifted = r <= 9 && c >= 22;
       switch (kind) {
         case "forest": forestTile(ctx, rng, x, y); break;
-        case "flowers": flowersTile(ctx, rng, x, y); break;
+        case "flowers": flowersTile(ctx, rng, x, y, lifted); break;
         case "path": pathTile(ctx, rng, x, y, c, r); break;
         case "plaza": plazaTile(ctx, rng, x, y); break;
         case "water": waterTile(ctx, rng, x, y); break;
         case "waterfall": waterfallTile(ctx, rng, x, y); break;
         case "bridge": bridgeTile(ctx, x, y); break;
         case "cliff": cliffTile(ctx, rng, x, y); break;
-        default: grassTile(ctx, rng, x, y); break;
+        default: grassTile(ctx, rng, x, y, lifted); break;
       }
     }
   }
@@ -125,17 +143,32 @@ function paintTerrainEdges(ctx: Ctx, rng: Rng) {
       const x = c * ART_TILE;
       const y = r * ART_TILE;
       if (kind === "forest" && at(c, r + 1) !== "forest") {
-        rect(ctx, x + 2, y + 5, 2, 5, p.trunk);
-        rect(ctx, x + 7, y + 6, 2, 4, p.trunk);
         rect(ctx, x, y + 8, ART_TILE, 2, "rgba(10, 20, 14, 0.55)");
-        for (let i = 0; i < 4; i++) rect(ctx, x + Math.floor(rng() * 9), y + 9, 2, 2, pick(rng, p.forest));
+        const trunks = rng() < 0.3 ? 0 : 1 + Math.floor(rng() * 2);
+        for (let i = 0; i < trunks; i++) {
+          const th = 3 + Math.floor(rng() * 3);
+          rect(ctx, x + 1 + Math.floor(rng() * 7), y + 10 - th, 2, th, p.trunk);
+        }
+        for (let i = 0; i < 2 + Math.floor(rng() * 3); i++) rect(ctx, x + Math.floor(rng() * 9), y + 9 + Math.floor(rng() * 2), 2, 2, pick(rng, p.forest));
       }
       if (kind === "water") {
-        if (isLand(at(c - 1, r))) for (let i = 0; i < 10; i += 2) pixel(ctx, x, y + i + ((c + i) % 2), p.foam);
-        if (isLand(at(c + 1, r))) for (let i = 0; i < 10; i += 2) pixel(ctx, x + 9, y + i + ((c + i) % 2), p.foam);
+        if (isLand(at(c - 1, r))) bankFoam(ctx, rng, x, y, 1);
+        if (isLand(at(c + 1, r))) bankFoam(ctx, rng, x + 9, y, -1);
         if (at(c, r - 1) === "waterfall") {
           for (let i = 0; i < 10; i++) pixel(ctx, x + i, y + (i % 2), p.foam);
           for (let i = 1; i < 9; i += 2) pixel(ctx, x + i, y + 2, p.foam);
+        }
+      }
+      if (kind === "plaza") {
+        for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+          const next = at(c + dc, r + dr);
+          if (next === undefined || next === "plaza" || isPathKind(next) || next === "water" || next === "bridge") continue;
+          for (let i = 0; i < 10; i++) {
+            const ex = dc === 0 ? x + i : x + (dc > 0 ? 9 : 0);
+            const ey = dr === 0 ? y + i : y + (dr > 0 ? 9 : 0);
+            pixel(ctx, ex, ey, p.curb[0]);
+            pixel(ctx, ex - dc, ey - dr, p.curb[1]);
+          }
         }
       }
       if (kind === "waterfall" && at(c, r + 1) === "water") {
@@ -144,7 +177,10 @@ function paintTerrainEdges(ctx: Ctx, rng: Rng) {
       if (kind === "cliff") {
         if (at(c, r - 1) !== "cliff") {
           rect(ctx, x, y, ART_TILE, 1, "#8a89a0");
-          for (let i = 0; i < 10; i += 2) rect(ctx, x + i, y - 1, 2, 3, pick(rng, p.grass));
+          for (let i = 0; i < 10; i++) {
+            if (rng() > 0.6) continue;
+            rect(ctx, x + i, y - 1 - Math.floor(rng() * 2), 2, 2 + Math.floor(rng() * 2), pick(rng, p.grassHigh));
+          }
           rect(ctx, x, y + 1, ART_TILE, 1, "rgba(120, 160, 110, 0.35)");
         }
         if (at(c, r + 1) !== "cliff") {

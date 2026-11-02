@@ -1,9 +1,8 @@
-import { Ctx, disc, pixel, rect, ring, sprite } from "./canvas";
+import { Ctx, disc, glow, pixel, rect, ring, sprite } from "./canvas";
 import { palette as p } from "./palette";
 import { dogLook, helperLook, merchantLook, paintCharacter, seerLook } from "./characters";
 
 const SHADOW = "rgba(8, 14, 10, 0.3)";
-const GLOW_WARM = "rgba(255, 210, 122, 0.18)";
 
 function roof(ctx: Ctx, cx: number, top: number, steps: readonly number[], colors: readonly [string, string]) {
   for (let i = 0; i < steps.length; i++) {
@@ -17,7 +16,7 @@ function roof(ctx: Ctx, cx: number, top: number, steps: readonly number[], color
 }
 
 function window_(ctx: Ctx, x: number, y: number, w: number, h: number) {
-  rect(ctx, x - 3, y - 3, w + 6, h + 6, "rgba(255, 210, 122, 0.12)");
+  glow(ctx, x + Math.floor(w / 2), y + Math.floor(h / 2), Math.floor(Math.max(w, h) / 2) + 3, p.glowWarm);
   rect(ctx, x - 1, y - 1, w + 2, h + 2, p.wood[1]);
   rect(ctx, x, y, w, h, p.windowLight);
   rect(ctx, x + Math.floor(w / 2), y, 1, h, p.wood[1]);
@@ -25,7 +24,7 @@ function window_(ctx: Ctx, x: number, y: number, w: number, h: number) {
 }
 
 function lanternHead(ctx: Ctx, x: number, y: number) {
-  rect(ctx, x - 4, y - 2, 9, 8, GLOW_WARM);
+  glow(ctx, x + 1, y + 2, 6, p.glowWarm);
   rect(ctx, x - 1, y, 4, 4, p.outline);
   rect(ctx, x, y + 1, 2, 2, p.windowLight);
 }
@@ -45,7 +44,7 @@ export function paintMarket(ctx: Ctx) {
   roof(ctx, 140, 30, [60, 68, 76, 84, 92], p.roofSlate);
   // open counter, warm interior
   rect(ctx, 116, 60, 38, 24, "#221610");
-  rect(ctx, 118, 61, 34, 15, GLOW_WARM);
+  rect(ctx, 118, 61, 34, 15, `rgba(${p.glowWarm}, 0.18)`);
   window_(ctx, 161, 53, 9, 9);
   // awning
   for (let i = 0; i < 11; i++) rect(ctx, 113 + i * 4, 54, 4, 7, p.awning[i % 2]);
@@ -91,10 +90,10 @@ export function paintOracle(ctx: Ctx) {
     rect(ctx, wx + 1, wy + 1, 1, 4, p.windowLight);
   }
   // arched door with violet glow
-  rect(ctx, 291, 73, 8, 7, "rgba(157, 127, 214, 0.4)");
   rect(ctx, 292, 74, 6, 6, "#241a3a");
   rect(ctx, 293, 72, 4, 2, p.stone[0]);
   rect(ctx, 294, 71, 2, 1, p.stone[0]);
+  glow(ctx, 295, 77, 6, p.glowViolet);
   pixel(ctx, 295, 77, "#9d7fd6");
   // indigo banner with gold crescent
   rect(ctx, 303, 64, 7, 13, "#3a2d6e");
@@ -105,7 +104,7 @@ export function paintOracle(ctx: Ctx) {
   paintCharacter(ctx, 285, 84, seerLook);
   rect(ctx, 305, 81, 2, 3, p.wood[1]);
   rect(ctx, 303, 80, 6, 1, p.wood[0]);
-  rect(ctx, 301, 74, 10, 6, "rgba(157, 127, 214, 0.25)");
+  glow(ctx, 306, 78, 6, p.glowViolet);
   disc(ctx, 306, 78, 2, p.water[2]);
   pixel(ctx, 305, 77, p.foam);
 }
@@ -135,7 +134,7 @@ export function paintCamp(ctx: Ctx) {
   for (const [w, y] of [[14, 172], [10, 168], [6, 164]] as const) rect(ctx, 330 - w / 2, y, w, 4, "#141f12");
   rect(ctx, 329, 144, 2, 6, p.wood[1]);
   // campfire
-  rect(ctx, 276, 184, 18, 14, "rgba(255, 159, 58, 0.14)");
+  glow(ctx, 285, 192, 9, p.glowFire);
   ring(ctx, 285, 195, 4, 6, p.stone[1]);
   rect(ctx, 281, 194, 8, 2, p.wood[1]);
   rect(ctx, 284, 192, 2, 5, p.wood[0]);

@@ -1,11 +1,8 @@
-import { Ctx, Rng, pick, pixel, rect, sprite } from "./canvas";
+import { Ctx, Rng, glow, pick, pixel, rect, sprite } from "./canvas";
 import { palette as p } from "./palette";
 
-const GLOW_WARM = "rgba(255, 210, 122, 0.18)";
-
 function lanternPost(ctx: Ctx, x: number, y: number) {
-  rect(ctx, x - 6, y - 14, 14, 14, "rgba(255, 210, 122, 0.1)");
-  rect(ctx, x - 4, y - 11, 10, 10, GLOW_WARM);
+  glow(ctx, x + 1, y - 10, 7, p.glowWarm);
   rect(ctx, x, y - 9, 2, 9, p.wood[1]);
   rect(ctx, x - 1, y - 12, 4, 4, p.outline);
   rect(ctx, x, y - 11, 2, 2, p.windowLight);

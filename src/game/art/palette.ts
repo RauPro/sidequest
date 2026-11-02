@@ -28,4 +28,9 @@ export const palette = {
   ember: "#e79153",
   slime: "#9bbd79",
   bolt: "#80b8d1",
+  glowWarm: "255, 210, 122",
+  glowFire: "255, 159, 58",
+  glowViolet: "157, 127, 214",
+  curb: ["#3b362e", "#8d857a"],
+  grassHigh: ["#33583c", "#3f6a48", "#274a32"],
 } as const;

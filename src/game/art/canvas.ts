@@ -38,6 +38,13 @@ export function ring(ctx: Ctx, cx: number, cy: number, inner: number, outer: num
   }
 }
 
+// Stepped round light pool; rgb is a "r, g, b" channel list from the palette.
+export function glow(ctx: Ctx, cx: number, cy: number, radius: number, rgb: string) {
+  disc(ctx, cx, cy, radius, `rgba(${rgb}, 0.08)`);
+  disc(ctx, cx, cy, Math.max(1, Math.round(radius * 0.6)), `rgba(${rgb}, 0.14)`);
+  disc(ctx, cx, cy, Math.max(1, Math.round(radius * 0.3)), `rgba(${rgb}, 0.2)`);
+}
+
 // Pixel-map painter: each non-space character maps to a colour; an optional
 // 1px outline is stamped around the silhouette first.
 export function sprite(ctx: Ctx, x: number, y: number, rows: readonly string[], colors: Readonly<Record<string, string>>, outline?: string) {
