@@ -90,7 +90,7 @@ export class WillowMarket extends Scene {
       this.add.image(l.x, l.y, "glow").setBlendMode(Phaser.BlendModes.ADD).setTint(l.color).setAlpha(l.alpha).setDisplaySize(l.radius * 2, l.radius * 2).setDepth(1100);
     }
     this.texture("vignette", WORLD_WIDTH, WORLD_HEIGHT, (ctx) => {
-      const g = ctx.createRadialGradient(320, 200, 120, 320, 200, 400);
+      const g = ctx.createRadialGradient(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, WORLD_HEIGHT * 0.3, WORLD_WIDTH / 2, WORLD_HEIGHT / 2, WORLD_HEIGHT);
       g.addColorStop(0, "rgba(5,10,14,0)");
       g.addColorStop(0.75, "rgba(5,10,14,0.28)");
       g.addColorStop(1, "rgba(5,10,14,0.6)");

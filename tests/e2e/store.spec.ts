@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { locations } from "../../src/game/world/locations";
-import { isWalkableKind, tileAt, visitorSpawn } from "../../src/game/world/villageMap";
+import { isWalkableKind, TILE_SIZE, tileAt, visitorSpawn } from "../../src/game/world/villageMap";
 import { cameraCenter, cameraZoom, worldToScreen } from "../../src/game/systems/camera";
 
 const worldPoint = (page: import("@playwright/test").Page, wx: number, wy: number) => {
@@ -101,13 +101,13 @@ test("the visitor walks with keys, enters places with E and tap-moves", async ({
   const view = page.viewportSize()!;
   const zoom = cameraZoom(view.width, view.height);
   const [pc, pr] = tileAttr!.split(",").map(Number);
-  const center = cameraCenter(view.width, view.height, zoom, { x: pc * 16 + 8, y: pr * 16 + 16 - 12 });
+  const center = cameraCenter(view.width, view.height, zoom, { x: pc * TILE_SIZE + TILE_SIZE / 2, y: (pr + 1) * TILE_SIZE - 12 });
   // (12,15) is off-screen on narrow views; tap the nearest on-screen plaza tile.
   const candidates = [[12, 15], [14, 14], [15, 12], [16, 12], [17, 13], [19, 11]];
   let target: number[] | undefined;
   let pt = { x: 0, y: 0 };
   for (const [c, r] of candidates) {
-    pt = worldToScreen({ x: c * 16 + 8, y: r * 16 + 8 }, view.width, view.height, zoom, center);
+    pt = worldToScreen({ x: c * TILE_SIZE + TILE_SIZE / 2, y: r * TILE_SIZE + TILE_SIZE / 2 }, view.width, view.height, zoom, center);
     if (pt.x > 20 && pt.x < view.width - 20 && pt.y > 80 && pt.y < view.height - 90) { target = [c, r]; break; }
   }
   if (!target) throw new Error("No on-screen plaza tile for tap-to-move");
