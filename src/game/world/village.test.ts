@@ -3,7 +3,7 @@ import {
   MAP_COLS, MAP_ROWS, WORLD_HEIGHT, WORLD_WIDTH, isPathKind, plazaCenter, reachableTiles,
   tileAt, tileKey, tileLegend, tileRectToWorld, villageEntry, villageRows, visitorSpawn,
 } from "./villageMap";
-import { locationIds, locations } from "./locations";
+import { locationIds, locations, villageMapDescription } from "./locations";
 import type { WorldRect } from "./villageMap";
 
 const allTiles = villageRows.flatMap((row, r) => [...row].map((ch, c) => ({ ch, c, r })));
@@ -98,6 +98,14 @@ describe("village locations", () => {
     for (const l of locations) {
       expect(l.name.trim()).not.toBe("");
       expect(l.purpose.trim()).not.toBe("");
+    }
+  });
+
+  it("describes every destination in the map's aria-label text", () => {
+    for (const l of locations) {
+      expect(villageMapDescription, l.id).toContain(l.name);
+      expect(villageMapDescription, l.id).toContain(l.purpose.toLowerCase());
+      expect(villageMapDescription, l.id).toContain(l.directions);
     }
   });
 });

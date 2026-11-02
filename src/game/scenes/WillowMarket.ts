@@ -4,12 +4,12 @@ import { paintVillage } from "../art/village";
 import { locations } from "../world/locations";
 import { visitorSpawn } from "../world/villageMap";
 import { createPlayer } from "../entities/Player";
-import type { LocationHandler } from "../systems/interaction";
+import type { LocationHandler, SceneReadyHandler } from "../systems/interaction";
 
 const VILLAGE_KEY = "willow-market-village";
 
 export class WillowMarket extends Scene {
-  constructor(private readonly onLocation: LocationHandler) { super("willow-market"); }
+  constructor(private readonly onLocation: LocationHandler, private readonly onReady: SceneReadyHandler) { super("willow-market"); }
 
   create() {
     if (!this.textures.exists(VILLAGE_KEY)) {
@@ -26,5 +26,6 @@ export class WillowMarket extends Scene {
         .on("pointerdown", () => this.onLocation(location.id));
     }
     createPlayer(this, visitorSpawn.x, visitorSpawn.y);
+    this.onReady();
   }
 }
