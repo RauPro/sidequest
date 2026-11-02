@@ -53,7 +53,7 @@ describe("scaffold API contracts", () => {
     expect((await record(request(event, "events"))).status).toBe(200);
     expect((await record(request({ ...event, event: "Placed Order" }, "events"))).status).toBe(400);
   });
-  it("fails closed for live mode, even if credentials are supplied", async () => {
+  it("fails closed for live mode without an allowlisted recipient", async () => {
     vi.stubEnv("SIDEQUEST_MODE", "live");
     vi.stubEnv("KLAVIYO_PRIVATE_API_KEY", "");
     expect((await subscribe(request({ email: "tester@example.com", consent: true }))).status).toBe(503);
@@ -61,7 +61,7 @@ describe("scaffold API contracts", () => {
     vi.stubEnv("KLAVIYO_LIST_ID", "test-list");
     vi.stubEnv("KLAVIYO_API_REVISION", "2026-10-15");
     const response = await subscribe(request({ email: "tester@example.com", consent: true }));
-    expect(response.status).toBe(501);
+    expect(response.status).toBe(403);
     expect(await response.text()).not.toContain("test-placeholder-not-a-secret");
     expect(fetch).not.toHaveBeenCalled();
   });

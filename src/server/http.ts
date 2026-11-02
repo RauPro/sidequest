@@ -48,9 +48,11 @@ export function jsonRoute<T>(schema: z.ZodType<T>, operation: (input: T) => Prom
       }
       const parsed = schema.safeParse(value);
       if (!parsed.success) throw new IntegrationError(400, "invalid_input", "Check the required fields and their values.");
-      return Response.json(await operation(parsed.data), { headers });
+      const result = await operation(parsed.data);
+      const accepted = !!result && typeof result === "object" && "status" in result && result.status === "accepted";
+      return Response.json(result, { status: accepted ? 202 : 200, headers });
     } catch (error) {
-      if (error instanceof IntegrationError) return Response.json({ error: error.code, message: error.message }, { status: error.status, headers });
+      if (error instanceof IntegrationError) return Response.json({ error: error.code, message: error.message }, { status: error.status, headers: { ...headers, ...(error.retryAfter ? { "Retry-After": String(error.retryAfter) } : {}) } });
       return Response.json({ error: "integration_unavailable", message: "The operation could not be completed." }, { status: 500, headers });
     }
   };
