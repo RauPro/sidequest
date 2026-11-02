@@ -35,14 +35,14 @@ npm run test:e2e
 ## What is implemented
 
 - App Router pages and a shared client cart provider with versioned local persistence.
-- A browser-only Phaser scene with four clickable location placeholders and equivalent DOM navigation.
+- A browser-only Phaser scene rendering Willow Market as original code-drawn pixel art from a tested tile map, with signposted, clickable destinations and equivalent DOM navigation.
 - A three-product demo catalog, starter recommendation rule, bag controls, and simulated checkout.
 - Validated `/api/identify`, `/api/events`, and `/api/subscribe` contracts with explicitly simulated responses.
 - Unit, integration, and browser test coverage for the foundation.
 
 ## Implementation boundaries
 
-The reference artwork, player movement, full Oracle dialogue, live Klaviyo APIs, event dispatch from shopping actions, and chat widget are future implementation work. The scene is a structural placeholder, not the finished game.
+Player movement (WORLD-03), canvas hover/focus/selected states (WORLD-02), the full Oracle dialogue, live Klaviyo APIs, event dispatch from shopping actions, and the chat widget are future implementation work. The village artwork is original pixel art drawn in code; environmental animation (DESIGN-02) is future polish.
 
 No provider request, subscription, email, or real purchase is made. `SIDEQUEST_MODE=live` returns a configuration error when required values are missing, or `501 live_adapter_pending` when present. Supplying credentials alone does not activate delivery. Live integration needs verified adapters, suitable abuse protection, and account-side testing before release.
 

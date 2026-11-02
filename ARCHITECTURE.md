@@ -49,10 +49,11 @@ src/
     subscription/               Post Office form
   game/
     config.ts                   Browser engine factory
+    art/                        Canvas-2D pixel-art painters
     scenes/                     Willow Market scene
-    entities/                   Placeholder visitor marker
+    entities/                   Visitor sprite
     systems/                    Semantic interaction contract
-    world/                      Location definitions
+    world/                      Tile map, location layout, hit areas
   domain/                       Catalog, cart, recommendation, order, event rules
   server/
     env.ts                      Server configuration validation
@@ -68,7 +69,7 @@ tests/e2e/                      Production browser journeys
 skills/                         Versioned agent skills
 ```
 
-Pure logic tests sit beside the code they exercise. Empty public asset directories are tracked with `.gitkeep`; no finished artwork has been generated or moved from the original reference.
+Pure logic tests sit beside the code they exercise. Empty public asset directories are tracked with `.gitkeep`; the village artwork is procedural and lives in `src/game/art/`, so no raster source files exist yet.
 
 ## Module boundaries
 
@@ -78,7 +79,7 @@ Pure logic tests sit beside the code they exercise. Empty public asset directori
 
 `features/` owns React interaction. Both routes share the cart through the common `(store)` layout. Each provider creates its own store; no mutable server singleton contains visitor state. Server and initial client snapshots are empty and consistent. Browser storage is read after mounting before writes are subscribed, and storage failure preserves an in-memory session. Only cart contents are persisted today; Oracle answers are currently local to the panel.
 
-`game/` owns canvas objects. `WorldClient` loads `PhaserHost` through `next/dynamic` with server rendering disabled. Runtime Phaser imports stay behind that boundary. The host creates and destroys one game instance per mount and passes a typed location callback into the scene. Game objects never own the cart or provider credentials. Movement and collision systems have not been implemented yet.
+`game/` owns canvas objects. `WorldClient` loads `PhaserHost` through `next/dynamic` with server rendering disabled. Runtime Phaser imports stay behind that boundary. The host creates and destroys one game instance per mount and passes typed location and scene-readiness callbacks into the scene. The village artwork is painted once into a canvas texture and displayed at 2× with `pixelArt` filtering; interactive hit zones come from location data, not painted pixels. Game objects never own the cart or provider credentials. Movement and collision systems have not been implemented yet.
 
 `server/` is marked with `server-only` imports. Route Handlers use Node.js and validate input before invoking adapters. Shared client/domain code does not import those modules. The Vitest configuration substitutes only the boundary marker during isolated Node tests; a real Next.js build still enforces the boundary.
 
@@ -116,7 +117,7 @@ The browser has no independent demo/live toggle. Current UI labels all actions a
 
 Editable Aseprite/Tiled source belongs under `assets/source/`; exported textures/maps and product images belong under `public/`. Phaser loads ordinary URLs such as `/game/player.png`. Preserve atlas and tileset references when exporting. Base-path/CDN behavior must be checked if a future deployment introduces either.
 
-The current scene uses geometric placeholders and a stationary visitor marker. Essential destinations also have DOM buttons, and `/shop` provides the direct route without loading the game scene. Commerce forms, feedback, and controls use HTML. The finished dialogue/modal and movement experience will require additional focus and keyboard arbitration checks.
+The village scene is original code-drawn pixel art (`src/game/art/`) painted from a tested tile map; there are no raster source assets. Signpost labels over the map are aria-hidden DOM duplicates of the location navigation, which stays the accessible equivalent; the map container exposes a generated aria-label description of the destinations, and `prefers-reduced-motion` stops the label indicator. The visitor is a stationary sprite for now. `/shop` provides the direct route without loading the game scene. Commerce forms, feedback, and controls use HTML. The finished dialogue/modal and movement experience will require additional focus and keyboard arbitration checks.
 
 ## Persistence and hosting
 
@@ -126,9 +127,9 @@ Deploy this combined application on a host that supports the Next.js Node.js ser
 
 ## Verification and next implementation steps
 
-Run type checks, lint, and Vitest before committing relevant changes. Playwright builds and starts the application in demo mode and covers desktop/mobile Chromium, a real canvas hotspot, shared cart navigation/reload, demo checkout, and the simulated subscription response. These tests do not verify Klaviyo account behavior or final artwork fidelity.
+Run type checks, lint, and Vitest before committing relevant changes. Playwright builds and starts the application in demo mode and covers desktop/mobile Chromium, real canvas hotspots and signpost labels for all four destinations, shared cart navigation/reload, demo checkout, and the simulated subscription response. These tests do not verify Klaviyo account behavior or final artwork fidelity.
 
-The next product work is to prepare reference-derived assets, implement movement/collision and dialogue, finish the Oracle flow and session preferences, and wire deliberate domain events to verified server adapters. Live account setup, identity rules, request abuse protection, retries/deduplication, and consent/confirmation evidence must precede external delivery. The supported chat widget needs its own account and loader setup.
+The next product work is to add canvas hover/focus/selected states, implement movement/collision and dialogue, finish the Oracle flow and session preferences, and wire deliberate domain events to verified server adapters. Live account setup, identity rules, request abuse protection, retries/deduplication, and consent/confirmation evidence must precede external delivery. The supported chat widget needs its own account and loader setup.
 
 ## References
 
