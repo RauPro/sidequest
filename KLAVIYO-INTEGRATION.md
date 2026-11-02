@@ -19,11 +19,25 @@ Public submissions require explicit consent, reject preference changes, and skip
 
 Vercel production needs `SIDEQUEST_MODE=live`, `KLAVIYO_SUBSCRIPTION_ACCESS=public`, `KLAVIYO_PRIVATE_API_KEY`, `KLAVIYO_LIST_ID`, and `KLAVIYO_API_REVISION`. Keep the key encrypted/server-only. `NEXT_PUBLIC_KLAVIYO_SITE_ID` is a public site identifier and does not install the chat widget. Environment changes require a fresh deployment. Existing Oracle variables are independent and must be preserved. Local development and Playwright remain in demo mode.
 
+### Production evidence — November 2, 2026
+
+Released source commit `0806ae4` to [sidequest.raul.engineer](https://sidequest.raul.engineer), deployment `dpl_2RpQQemVCkVpnKgxtwWLxfewTSHA`. The existing encrypted production key and Oracle configuration were preserved. The list ID, API revision, public site ID, live mode, and public subscription mode are now stored in Vercel production. Deployment input came from a tracked-source archive with no local credentials or test artifacts.
+
+- Live `GET /api/subscribe` returns HTTP 200 with `mode=live` and `confirmationRequired=true`, after reading the actual Klaviyo list with the production key.
+- **SIDEQUEST Newsletter** now uses double opt-in. A recipient-free invalid API payload returned HTTP 400 rather than a missing-scope error for the locally configured subscription key.
+- A direct POST without BotID proof returns HTTP 403 `request_not_verified`.
+- A production-browser submission using an address rejected by server validation passed bot verification and reached the expected validation error. It created no subscription and sent no email.
+- The live village, catalog feed, and public Post Office form render correctly. The browser bundle was scanned for the configured private key and contained no match.
+- Typecheck, lint, 88 unit/integration tests, and all 32 Desktop Chrome/Pixel 7 browser checks passed in the final run.
+- The **SIDEQUEST Welcome** flow remains Draft. Confirmation uses the existing account sender/template; no branded confirmation copy or welcome campaign was published. Actual subscription confirmation and inbox delivery were not tested.
+
+Public signup is available to every visitor. Public Oracle recommendations remain local, while email-profile saves still use the invited test gate. Automatic shopping events and the Camp chat widget are separate features and are not enabled by this release.
+
 ## Local configuration
 
 Keep private values in ignored `.env.local`. Demo mode makes no provider calls. For invited live testing, configure `SIDEQUEST_MODE=live`, `KLAVIYO_SUBSCRIPTION_ACCESS=invited`, the existing key/list/revision values, and `KLAVIYO_LIVE_ALLOWED_EMAILS` with the intended test addresses. Empty or non-matching allowlists block invited operations before network access. Do not use wildcard recipients.
 
-The isolated worktree does not copy private credentials or change the main checkout's mode. Its temporary verification server loaded the existing configuration in memory with one allowlisted test recipient. The test suite uses fake credentials and mocked transport. Public launch requires a reviewed identity/abuse-control design; the development allowlist is not a substitute for authentication or a production rate limiter.
+Initial adapter verification used an isolated worktree and loaded the existing configuration in memory with one allowlisted test recipient. The test suite uses fake credentials and mocked transport. Opening profile writes publicly still requires verified email ownership; the development allowlist is not authentication. Public newsletter protection is described above.
 
 ## Retries and uncertain outcomes
 

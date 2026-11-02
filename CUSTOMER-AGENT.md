@@ -17,7 +17,7 @@
 Configuration:
 
 - `ORACLE_PROFILE_MODE=demo` is the default: no provider request, and the UI says the preference was not sent.
-- `ORACLE_PROFILE_MODE=live` enables profile saves independently of `SIDEQUEST_MODE`. Checkout, newsletter and other scaffold operations remain demo-only.
+- `ORACLE_PROFILE_MODE=live` enables profile saves independently of `SIDEQUEST_MODE`; it does not change newsletter or event behavior. The subsequent public newsletter rollout is documented in [KLAVIYO-INTEGRATION.md](KLAVIYO-INTEGRATION.md).
 - `KLAVIYO_PRIVATE_API_KEY` needs `profiles:write`.
 - `ORACLE_PROFILE_ALLOWED_EMAILS` is a comma-separated list of deliberately invited test addresses. Empty blocks all live saves.
 
