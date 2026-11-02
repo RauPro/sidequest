@@ -1,0 +1,4 @@
+interface:
+  display_name: "Next.js Game Backend"
+  short_description: "Build Next.js APIs and browser-only game boundaries"
+  default_prompt: "Use $nextjs-game-backend to build the Next.js application shell and backend for this Phaser storefront."
