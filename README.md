@@ -35,7 +35,7 @@ npm run test:e2e
 ## What is implemented
 
 - App Router pages and a shared client cart provider with versioned local persistence.
-- A browser-only Phaser scene rendering Willow Market as original code-drawn pixel art from a tested tile map, with signposted, clickable destinations and equivalent DOM navigation.
+- A browser-only Phaser scene rendering Willow Market as original code-drawn 3/4-view pixel art from a tested tile map: layered ground/foreground canvases, y-sorted buildings, props and NPCs, painted signboards, and equivalent DOM navigation.
 - A three-product demo catalog, starter recommendation rule, bag controls, and simulated checkout.
 - Validated `/api/identify`, `/api/events`, and `/api/subscribe` contracts with explicitly simulated responses.
 - Unit, integration, and browser test coverage for the foundation.

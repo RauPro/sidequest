@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  MAP_COLS, MAP_ROWS, WORLD_HEIGHT, WORLD_WIDTH, isPathKind, plazaCenter, reachableTiles,
-  tileAt, tileKey, tileLegend, tileRectToWorld, villageEntry, villageRows, visitorSpawn,
+  MAP_COLS, MAP_ROWS, WORLD_HEIGHT, WORLD_WIDTH, isPathKind, isWalkableKind, plazaCenter,
+  reachableTiles, tileAt, tileKey, tileLegend, tileRectToWorld, villageProps, villageRows, visitorSpawn,
 } from "./villageMap";
 import { locationIds, locations, villageMapDescription } from "./locations";
 import type { WorldRect } from "./villageMap";
@@ -19,8 +19,8 @@ describe("village tile map", () => {
       expect(row, `row ${r}`).toHaveLength(MAP_COLS);
       for (const ch of row) expect(Object.hasOwn(tileLegend, ch), `row ${r} "${ch}"`).toBe(true);
     }
-    expect(WORLD_WIDTH).toBe(800);
-    expect(WORLD_HEIGHT).toBe(500);
+    expect(WORLD_WIDTH).toBe(640);
+    expect(WORLD_HEIGHT).toBe(400);
   });
 
   it("covers every building tile with a non-overlapping footprint", () => {
@@ -37,20 +37,29 @@ describe("village tile map", () => {
     for (const { ch, c, r } of allTiles) if (ch === "B") expect(covered.has(`${c},${r}`), `${c},${r}`).toBe(true);
   });
 
-  it("places each entrance on a path-kind tile just below its footprint", () => {
+  it("maps every prop one-to-one onto a prop tile", () => {
+    const propTiles = allTiles.filter(({ ch }) => ch === "x").map(({ c, r }) => `${c},${r}`);
+    expect(propTiles.sort()).toEqual(villageProps.map((p) => `${p.col},${p.row}`).sort());
+    expect(new Set(villageProps.map((p) => p.id)).size).toBe(villageProps.length);
+  });
+
+  it("places each entrance on a path-kind tile beside its footprint or its props", () => {
     for (const location of locations) {
-      const { footprint: f, entrance } = location;
-      expect(entrance.row, location.id).toBe(f.row + f.rows);
-      expect(entrance.col, location.id).toBeGreaterThanOrEqual(f.col);
-      expect(entrance.col, location.id).toBeLessThan(f.col + f.cols);
-      expect(isPathKind(tileAt(entrance.col, entrance.row)), location.id).toBe(true);
+      const { footprint: f, entrance, id } = location;
+      expect(isPathKind(tileAt(entrance.col, entrance.row)), id).toBe(true);
+      const inFootprint = (c: number, r: number) => c >= f.col && c < f.col + f.cols && r >= f.row && r < f.row + f.rows;
+      const ownProps = villageProps.filter((p) => p.location === id);
+      const adjacent = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dc, dr]) =>
+        inFootprint(entrance.col + dc, entrance.row + dr) ||
+        ownProps.some((p) => p.col === entrance.col + dc && p.row === entrance.row + dr));
+      expect(adjacent, id).toBe(true);
     }
   });
 
-  it("connects the plaza to every entrance, the village entry and all path tiles", () => {
+  it("connects the plaza to every entrance, the south road and all path tiles", () => {
     const reached = reachableTiles(plazaCenter, isPathKind);
     for (const location of locations) expect(reached.has(tileKey(location.entrance)), location.id).toBe(true);
-    expect(reached.has(tileKey(villageEntry))).toBe(true);
+    for (const c of [13, 14, 15]) expect(reached.has(`${c},${MAP_ROWS - 1}`), `south road ${c}`).toBe(true);
     for (const { ch, c, r } of allTiles) if (isPathKind(tileLegend[ch])) expect(reached.has(`${c},${r}`), `${c},${r}`).toBe(true);
   });
 
@@ -65,30 +74,26 @@ describe("village tile map", () => {
 });
 
 describe("village locations", () => {
-  it("keeps hit areas in bounds, covering footprint and label, without overlap", () => {
+  it("keeps hit areas in bounds, covering footprint and own props, without overlap", () => {
     const world = { x: 0, y: 0, width: WORLD_WIDTH, height: WORLD_HEIGHT };
     for (const location of locations) {
       expect(containsRect(world, location.hitArea), location.id).toBe(true);
       expect(containsRect(location.hitArea, tileRectToWorld(location.footprint)), location.id).toBe(true);
-      expect(containsRect(location.hitArea, { ...location.label, width: 1, height: 1 }), location.id).toBe(true);
+      for (const prop of villageProps.filter((p) => p.location === location.id)) {
+        expect(containsRect(location.hitArea, tileRectToWorld({ col: prop.col, row: prop.row, cols: 1, rows: 1 })), prop.id).toBe(true);
+      }
     }
     for (const [i, a] of locations.entries()) for (const b of locations.slice(i + 1)) {
       expect(overlaps(a.hitArea, b.hitArea), `${a.id}/${b.id}`).toBe(false);
     }
   });
 
-  it("keeps label anchors inside the safe band for DOM overlays", () => {
-    for (const { label, id } of locations) {
-      expect(label.x, id).toBeGreaterThanOrEqual(120);
-      expect(label.x, id).toBeLessThanOrEqual(680);
-      expect(label.y, id).toBeGreaterThanOrEqual(30);
-      expect(label.y, id).toBeLessThanOrEqual(470);
-    }
-  });
-
-  it("spawns the visitor on the plaza clear of every hit area", () => {
-    expect(tileAt(Math.floor(visitorSpawn.x / 20), Math.floor(visitorSpawn.y / 20))).toBe("plaza");
+  it("spawns the visitor on walkable plaza clear of hit areas, reaching all entrances", () => {
+    const spawnTile = { col: Math.floor(visitorSpawn.x / 16), row: Math.floor(visitorSpawn.y / 16) };
+    expect(tileAt(spawnTile.col, spawnTile.row)).toBe("plaza");
     for (const { hitArea } of locations) expect(containsRect(hitArea, { ...visitorSpawn, width: 1, height: 1 })).toBe(false);
+    const reached = reachableTiles(spawnTile, isWalkableKind);
+    for (const location of locations) expect(reached.has(tileKey(location.entrance)), location.id).toBe(true);
   });
 
   it("declares ids in order with unique non-empty names and purposes", () => {

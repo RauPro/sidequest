@@ -1,9 +1,7 @@
-import { TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from "../world/villageMap";
+import { WORLD_HEIGHT, WORLD_WIDTH } from "../world/villageMap";
 
-export const ART_SCALE = 2;
-export const ART_TILE = TILE_SIZE / ART_SCALE;
-export const ART_WIDTH = WORLD_WIDTH / ART_SCALE;
-export const ART_HEIGHT = WORLD_HEIGHT / ART_SCALE;
+export const ART_WIDTH = WORLD_WIDTH;
+export const ART_HEIGHT = WORLD_HEIGHT;
 
 export type Ctx = CanvasRenderingContext2D;
 export type Rng = () => number;
@@ -29,6 +27,14 @@ export function disc(ctx: Ctx, cx: number, cy: number, radius: number, color: st
   }
 }
 
+export function ellipse(ctx: Ctx, cx: number, cy: number, rx: number, ry: number, color: string) {
+  for (let dy = -ry; dy <= ry; dy++) {
+    for (let dx = -rx; dx <= rx; dx++) {
+      if ((dx * dx) / (rx * rx) + (dy * dy) / (ry * ry) <= 1) pixel(ctx, cx + dx, cy + dy, color);
+    }
+  }
+}
+
 export function ring(ctx: Ctx, cx: number, cy: number, inner: number, outer: number, color: string) {
   for (let dy = -outer; dy <= outer; dy++) {
     for (let dx = -outer; dx <= outer; dx++) {
@@ -40,9 +46,9 @@ export function ring(ctx: Ctx, cx: number, cy: number, inner: number, outer: num
 
 // Stepped round light pool; rgb is a "r, g, b" channel list from the palette.
 export function glow(ctx: Ctx, cx: number, cy: number, radius: number, rgb: string) {
-  disc(ctx, cx, cy, radius, `rgba(${rgb}, 0.08)`);
-  disc(ctx, cx, cy, Math.max(1, Math.round(radius * 0.6)), `rgba(${rgb}, 0.14)`);
-  disc(ctx, cx, cy, Math.max(1, Math.round(radius * 0.3)), `rgba(${rgb}, 0.2)`);
+  ellipse(ctx, cx, cy, radius, Math.max(1, Math.round(radius * 0.72)), `rgba(${rgb}, 0.07)`);
+  ellipse(ctx, cx, cy, Math.max(1, Math.round(radius * 0.6)), Math.max(1, Math.round(radius * 0.45)), `rgba(${rgb}, 0.13)`);
+  ellipse(ctx, cx, cy, Math.max(1, Math.round(radius * 0.3)), Math.max(1, Math.round(radius * 0.22)), `rgba(${rgb}, 0.2)`);
 }
 
 // Pixel-map painter: each non-space character maps to a colour; an optional

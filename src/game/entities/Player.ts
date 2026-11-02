@@ -1,18 +1,28 @@
 import type { Scene } from "phaser";
-import { ART_SCALE } from "../art/canvas";
-import { paintCharacter, visitorLook } from "../art/characters";
+import { buildVillageArt } from "../art/manifest";
 
-const VISITOR_KEY = "visitor";
-
-// Static visitor sprite; movement and animation arrive with WORLD-03.
+// Static idle visitor for now; movement and interaction arrive with WORLD-03.
 export function createPlayer(scene: Scene, x: number, y: number) {
-  if (!scene.textures.exists(VISITOR_KEY)) {
-    const texture = scene.textures.createCanvas(VISITOR_KEY, 12, 16);
-    if (!texture) throw new Error("Could not create visitor canvas texture");
+  const { player } = buildVillageArt();
+  if (!scene.textures.exists(player.key)) {
+    const texture = scene.textures.createCanvas(player.key, player.width, player.height);
+    if (!texture) throw new Error("Could not create player canvas texture");
     const ctx = texture.getContext();
     ctx.imageSmoothingEnabled = false;
-    paintCharacter(ctx, 6, 15, visitorLook);
+    player.paint(ctx);
     texture.refresh();
+    for (let i = 0; i < 9; i++) texture.add(`${i}`, 0, (i % 3) * 16, Math.floor(i / 3) * 24, 16, 24);
   }
-  return scene.add.image(x, y, VISITOR_KEY).setOrigin(0.5, 1).setScale(ART_SCALE);
+  if (!scene.anims.exists("walk-down")) {
+    for (const [dir, base] of [["down", 0], ["up", 3], ["right", 6]] as const) {
+      scene.anims.create({ key: `idle-${dir}`, frames: [{ key: player.key, frame: `${base}` }] });
+      scene.anims.create({
+        key: `walk-${dir}`,
+        frames: [`${base + 1}`, `${base}`, `${base + 2}`, `${base}`].map((frame) => ({ key: player.key, frame })),
+        frameRate: 8,
+        repeat: -1,
+      });
+    }
+  }
+  return scene.add.sprite(x, y, player.key, "0").setOrigin(0.5, 1).setDepth(y);
 }

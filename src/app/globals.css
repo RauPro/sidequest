@@ -21,14 +21,6 @@ main { max-width: 1050px; margin: auto; padding: 32px 24px 64px; }
 .world-frame { position: relative; overflow: hidden; border: 1px solid var(--line); background: #172d2d; aspect-ratio: 8/5; }
 .game-host { width: 100%; height: 100%; }
 .game-host canvas { display: block; }
-.map-labels { position: absolute; inset: 0; pointer-events: none; }
-.map-label { position: absolute; width: max-content; min-width: min-content; max-width: 30%; transform: translate(-50%, -50%); padding: 3px 10px 4px; text-align: center; line-height: 1.15; color: #f6ead0; background: rgba(33, 22, 14, .9); border: 2px solid #c79a55; border-radius: 3px; box-shadow: 0 2px 0 rgba(0, 0, 0, .45); }
-.map-label-name { display: flex; align-items: center; justify-content: center; gap: 6px; font-family: Georgia, "Times New Roman", serif; font-weight: 600; font-size: clamp(.75rem, 1.6vw, 1rem); letter-spacing: .06em; text-transform: uppercase; }
-.map-label-name::before { content: ""; flex: none; width: 6px; height: 6px; background: var(--accent); border: 1px solid #1b120c; transform: rotate(45deg); animation: map-indicator-bob 1.6s ease-in-out infinite; }
-@keyframes map-indicator-bob { 50% { transform: translateY(-2px) rotate(45deg); } }
-.map-label-purpose { display: block; margin-top: 1px; font-size: clamp(.7rem, 1.15vw, .8rem); color: #dccba6; }
-@media (prefers-reduced-motion: reduce) { .map-label-name::before { animation: none; } }
-@media (max-width: 640px) { .map-label-purpose { display: none; } .map-label { padding: 3px 8px 4px; } }
 .location-nav, .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
 .location-nav button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; line-height: 1.2; text-align: left; }
 .location-purpose { font-size: .8rem; color: var(--muted); }

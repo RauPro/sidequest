@@ -22,35 +22,12 @@ test("village and shop share a persisted bag and simulated checkout", async ({ p
   expect(errors).toEqual([]);
 });
 
-test("every village destination is signposted and opens from its canvas hotspot", async ({ page }, testInfo) => {
+test("every village destination opens from its canvas hotspot", async ({ page }, testInfo) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
   const map = page.getByTestId("village-map");
   await expect(map).toHaveAttribute("data-ready", "true");
-
-  const frameBox = await map.boundingBox();
-  if (!frameBox) throw new Error("Map frame bounds unavailable");
-  const labelBoxes = new Map<string, { x: number; y: number; width: number; height: number }>();
-  for (const location of locations) {
-    const label = page.getByTestId(`map-label-${location.id}`);
-    await expect(label).toBeVisible();
-    await expect(label).toContainText(location.name);
-    const box = await label.boundingBox();
-    if (!box) throw new Error(`Label bounds unavailable for ${location.id}`);
-    expect(box.x).toBeGreaterThanOrEqual(frameBox.x - 1);
-    expect(box.y).toBeGreaterThanOrEqual(frameBox.y - 1);
-    expect(box.x + box.width).toBeLessThanOrEqual(frameBox.x + frameBox.width + 1);
-    expect(box.y + box.height).toBeLessThanOrEqual(frameBox.y + frameBox.height + 1);
-    labelBoxes.set(location.id, box);
-  }
-  for (const [i, a] of locations.entries()) {
-    for (const b of locations.slice(i + 1)) {
-      const ab = labelBoxes.get(a.id)!;
-      const bb = labelBoxes.get(b.id)!;
-      expect(ab.x < bb.x + bb.width && bb.x < ab.x + ab.width && ab.y < bb.y + bb.height && bb.y < ab.y + ab.height, `${a.id}/${b.id} labels overlap`).toBe(false);
-    }
-  }
   await map.screenshot({ path: testInfo.outputPath("village-map.png") });
 
   const canvasBox = await map.locator("canvas").boundingBox();
@@ -68,10 +45,6 @@ test("every village destination is signposted and opens from its canvas hotspot"
     await expect(page.getByRole("button", { name: location.name, exact: true })).toHaveAttribute("aria-pressed", "true");
     await panels[id]();
   }
-
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  const animationName = await page.locator(".map-label-name").first().evaluate((el) => getComputedStyle(el, "::before").animationName);
-  expect(animationName).toBe("none");
   expect(errors).toEqual([]);
 });
 
