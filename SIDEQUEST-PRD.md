@@ -1,6 +1,6 @@
 # SIDEQUEST — Product Requirements
 
-> Proposed requirements for a retro game-inspired commerce experience. This is a preparation brief, not an official Klaviyo interview assignment. The actual assignment, available time, and permitted tools take precedence.
+> Proposed requirements for a retro game-inspired commerce experience.
 
 ## 1. Product Objective
 
@@ -16,11 +16,15 @@ The game world must support shopping. Visitors must also be able to browse and p
 
 ## 2. Scope and Priorities
 
-| Priority | Meaning |
-| --- | --- |
-| P0 — Core | Required for a complete, reviewable prototype. |
+
+| Priority         | Meaning                                                                                  |
+| ---------------- | ---------------------------------------------------------------------------------------- |
+| P0 — Core        | Required for a complete, reviewable prototype.                                           |
 | P1 — Integration | Added once the core journey works, or promoted to P0 if required by the interview brief. |
-| P2 — Polish | Optional enhancements after the core and required integrations are reliable. |
+| P2 — Polish      | Optional enhancements after the core and required integrations are reliable.             |
+
+
+
 
 ### Core scope
 
@@ -34,6 +38,8 @@ The game world must support shopping. Visitors must also be able to browse and p
 - A clearly labeled simulated checkout.
 - Responsive controls and an accessible alternative to map navigation.
 
+
+
 ### Out of scope for the initial version
 
 - Combat, enemies, character leveling, or a full RPG progression system.
@@ -42,6 +48,8 @@ The game world must support shopping. Visitors must also be able to browse and p
 - Real payment processing, inventory fulfillment, or shipping operations.
 - A custom CMS or large product catalog.
 - Unrestricted AI behavior or autonomous purchases.
+
+
 
 ## 3. Primary User Journey
 
@@ -57,6 +65,8 @@ The game world must support shopping. Visitors must also be able to browse and p
 Visitors may skip, revisit, or exit any optional dialogue without losing their cart.
 
 ## 4. World and Navigation Requirements
+
+
 
 ### WORLD-01 — Village layout [P0]
 
@@ -98,6 +108,8 @@ Visitors may skip, revisit, or exit any optional dialogue without losing their c
 
 ## 5. Product Catalog and Market
 
+
+
 ### SHOP-01 — Product data [P0]
 
 - Include three original fictional products: an orange dragon, a green slime, and a blue robot.
@@ -128,6 +140,8 @@ Visitors may skip, revisit, or exit any optional dialogue without losing their c
 
 ## 6. Oracle and Personalization
 
+
+
 ### ORACLE-01 — Preference dialogue [P0]
 
 - Ask two or three concise questions through an RPG-style dialogue.
@@ -157,6 +171,8 @@ Visitors may skip, revisit, or exit any optional dialogue without losing their c
 
 ## 7. Camp and Customer Assistance
 
+
+
 ### HELP-01 — In-world support [P0]
 
 - Provide a friendly character at the Camp who offers product and store information.
@@ -177,6 +193,8 @@ Visitors may skip, revisit, or exit any optional dialogue without losing their c
 **Acceptance:** The live path can be demonstrated, and service failure leaves basic support available.
 
 ## 8. Backpack and Checkout
+
+
 
 ### CART-01 — Cart behavior [P0]
 
@@ -212,6 +230,8 @@ Visitors may skip, revisit, or exit any optional dialogue without losing their c
 
 ## 9. Post Office and Email Subscription
 
+
+
 ### EMAIL-01 — Subscription interface [P0]
 
 - Present subscription as receiving letters or updates from the village.
@@ -244,14 +264,18 @@ The following is a proposed integration contract. Final event names, fields, and
 - Suggested custom properties: `preferred_companion`, `desk_mood`, and `visual_style`.
 - Do not treat profile identification as marketing consent.
 
+
+
 ### Suggested custom events
 
-| Event | Trigger | Suggested properties |
-| --- | --- | --- |
-| `Sidequest Oracle Completed` | A completed recommendation dialogue | Answer IDs, recommended product ID, recommendation rule version |
-| `Sidequest Product Viewed` | A deliberate product detail interaction | Product ID, discovery source: market, oracle, or shop view |
-| `Sidequest Bag Updated` | A cart change | Product IDs, quantities, cart value, currency |
-| `Sidequest Demo Checkout Completed` | A completed simulated checkout | Demo order ID, product IDs, quantities, demo total, currency |
+
+| Event                               | Trigger                                 | Suggested properties                                            |
+| ----------------------------------- | --------------------------------------- | --------------------------------------------------------------- |
+| `Sidequest Oracle Completed`        | A completed recommendation dialogue     | Answer IDs, recommended product ID, recommendation rule version |
+| `Sidequest Product Viewed`          | A deliberate product detail interaction | Product ID, discovery source: market, oracle, or shop view      |
+| `Sidequest Bag Updated`             | A cart change                           | Product IDs, quantities, cart value, currency                   |
+| `Sidequest Demo Checkout Completed` | A completed simulated checkout          | Demo order ID, product IDs, quantities, demo total, currency    |
+
 
 - Keep simulated order events explicitly separate from real purchase events and revenue reporting.
 - Avoid duplicate events caused by rerenders or repeated completion clicks.
@@ -264,6 +288,8 @@ The following is a proposed integration contract. Final event names, fields, and
 
 ## 11. Visual and Interaction Design
 
+
+
 ### DESIGN-01 — Art direction [P0]
 
 - Use an original 16-bit RPG-inspired visual language.
@@ -273,6 +299,8 @@ The following is a proposed integration contract. Final event names, fields, and
 - Keep essential text readable rather than imitating tiny console text exactly.
 - Maintain strong hierarchy between the world, dialogue, product information, and primary actions.
 
+
+
 ### DESIGN-02 — Environmental polish [P2]
 
 - Add a small number of purposeful animations: water, lanterns, idle characters, or companion movement.
@@ -280,12 +308,18 @@ The following is a proposed integration contract. Final event names, fields, and
 - Respect reduced-motion preferences.
 - Keep animation and sound from interfering with forms or shopping controls.
 
+
+
 ### Visual reference
 
 - [SIDEQUEST concept image](ui-concepts/sidequest.png)
 - The image establishes the direction, not an exact implementation requirement. Simplify scene detail as necessary to preserve usability and finish the core journey.
 
+
+
 ## 12. Accessibility and Responsive Behavior
+
+
 
 ### ACCESS-01 — Input and semantics [P0]
 
@@ -296,6 +330,8 @@ The following is a proposed integration contract. Final event names, fields, and
 - Do not communicate selection, availability, or errors through color alone.
 - Expose cart updates and important status changes to assistive technology without announcing continuous game movement.
 - Provide a text-based route to all commerce functions through Shop view and accessible navigation.
+
+
 
 ### ACCESS-02 — Responsive layout [P0]
 
@@ -317,6 +353,8 @@ The following is a proposed integration contract. Final event names, fields, and
 - Separate demo mode from live integration mode through explicit configuration.
 - Provide setup instructions and an environment-variable example without secrets.
 - Choose the implementation stack according to the actual assignment; no game engine or frontend framework is mandated by this brief.
+
+
 
 ## 14. Validation Checklist
 
@@ -341,13 +379,17 @@ Prioritize meaningful checks of recommendation rules, cart calculations, and int
 
 ## 15. Delivery Plan
 
-| Iteration | Deliverable | Completion condition |
-| --- | --- | --- |
-| 1 — Complete shopping path | Catalog, product panel, shared cart, demo checkout, and direct Shop view | A visitor can finish the shopping journey. |
-| 2 — Explorable world | Village map, clickable locations, merchant dialogue, and support topics | Every important map destination leads to a useful function. |
-| 3 — Personalization | Oracle dialogue, recommendation rules, and subscription interface | Choices meaningfully change the recommended product. |
-| 4 — Connected experience | Required Klaviyo profile, event, subscription, or automation integration | A test action has verifiable downstream evidence. |
-| 5 — Game polish | Movement, companion follower, environmental animation, and optional quest | Enhancements preserve accessibility and the complete shopping path. |
+
+| Iteration                  | Deliverable                                                               | Completion condition                                                |
+| -------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| 1 — Complete shopping path | Catalog, product panel, shared cart, demo checkout, and direct Shop view  | A visitor can finish the shopping journey.                          |
+| 2 — Explorable world       | Village map, clickable locations, merchant dialogue, and support topics   | Every important map destination leads to a useful function.         |
+| 3 — Personalization        | Oracle dialogue, recommendation rules, and subscription interface         | Choices meaningfully change the recommended product.                |
+| 4 — Connected experience   | Required Klaviyo profile, event, subscription, or automation integration  | A test action has verifiable downstream evidence.                   |
+| 5 — Game polish            | Movement, companion follower, environmental animation, and optional quest | Enhancements preserve accessibility and the complete shopping path. |
+
+
+
 
 ## 16. Final Deliverables
 
@@ -359,6 +401,8 @@ Prioritize meaningful checks of recommendation rules, cart calculations, and int
 - Evidence of meaningful validation.
 - A short demonstration that follows one visitor from discovery to cart, checkout, and any verified integration.
 
+
+
 ## 17. Questions to Resolve When the Assignment Arrives
 
 - What outcome is being evaluated, and how much time is available?
@@ -368,6 +412,8 @@ Prioritize meaningful checks of recommendation rules, cart calculations, and int
 - Will a test account and credentials be provided?
 - Should checkout be simulated or connected to a payment sandbox?
 - Is desktop, mobile, or accessibility coverage explicitly evaluated?
+
+
 
 ## Definition of Done
 
