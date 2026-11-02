@@ -1,6 +1,6 @@
 # SIDEQUEST web-game skills
 
-Original reusable skills for the Next.js App Router, React, TypeScript, and Phaser stack. Next.js owns the application shell and server endpoints; Phaser runs in the browser. These repository copies are the versioned source; personal installation copies belong in `$CODEX_HOME/skills`, or `~/.codex/skills` when unset. Editing a repository copy does not automatically update its installed copy.
+Original reusable skills for the Next.js App Router, React, TypeScript, and Phaser stack. Next.js owns the application shell and server endpoints; Phaser runs in the browser. These repository copies are the versioned source; personal installation copies belong in `$CODEX_HOME/skills`, or `~/.codex/skills` when unset. Editing a repository copy does not automatically update its installed copy. `.agents/skills` links to this directory so agents that scan that path (such as Devin) discover the repository copies directly.
 
 | Skill | Responsibility | Example invocation |
 | --- | --- | --- |
