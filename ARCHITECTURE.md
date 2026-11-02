@@ -19,7 +19,7 @@ flowchart LR
   API --> Validation[Request validation]
   Validation --> Adapter[Server-only integration adapter]
   Adapter --> Demo[Current: simulated result]
-  Adapter -. future verified implementation .-> Klaviyo[Klaviyo]
+  Adapter -->|live mode + allowed test recipient| Klaviyo[Klaviyo]
 ```
 
 The subscription form exercises the API boundary. Product/cart/Oracle actions currently operate locally and do not automatically dispatch provider events. The API event contract prepares that later work.
@@ -58,7 +58,7 @@ src/
     env.ts                      Server configuration validation
     http.ts                     Shared JSON request/response handling
     validation/                 Strict request schemas
-    klaviyo/                    Server-only scaffold adapters
+    klaviyo/                    Server-only profile, event, subscription adapters
   components/ui/                Shared interface primitives
 public/game/                    Future runtime textures, maps, audio
 public/products/                Future product images
@@ -94,7 +94,7 @@ All three endpoints accept JSON POST requests. Responses use `Cache-Control: no-
 
 The definitive schemas are in `src/server/validation/integrations.ts`. Preferences currently support companion, desk mood, and visual style. Event names are the four custom SIDEQUEST demo/discovery events, not real purchase metrics. Event-specific cross-field checks and actual dispatch/deduplication belong to the live integration implementation.
 
-A successful demo result is HTTP 200 with `status: "simulated"`, `mode: "demo"`, `operation`, and `delivered: false`. Invalid input returns 400, forbidden origin 403, excessive body 413, and unsupported content type 415. An invalid mode or missing live configuration returns 503. Complete live configuration returns 501 because delivery adapters are not implemented. No endpoint silently claims live success.
+A successful demo result is HTTP 200 with `status: "simulated"`, `mode: "demo"`, `operation`, and `delivered: false`. Invalid input returns 400, forbidden origin 403, excessive body 413, and unsupported content type 415. An invalid mode or missing live configuration returns 503. A recipient outside the configured development allowlist returns 403. Live profile updates return an identified profile ID; event and subscription requests return HTTP 202 with accepted/pending status. Provider failures are mapped to redacted error codes. See `KLAVIYO-INTEGRATION.md` for retry semantics.
 
 ## Environment configuration
 
@@ -106,11 +106,12 @@ A successful demo result is HTTP 200 with `status: "simulated"`, `mode: "demo"`,
 | `KLAVIYO_PRIVATE_API_KEY` | Server only | No in demo; validated in live | Future profile, event, and subscription requests |
 | `KLAVIYO_LIST_ID` | Server only | No in demo; validated in live | Intended newsletter list |
 | `KLAVIYO_API_REVISION` | Server only | No in demo; validated in live | Pinned provider contract; template uses `2026-10-15` |
+| `KLAVIYO_LIVE_ALLOWED_EMAILS` | Server only | Required for live testing | Comma-separated test recipients; empty blocks live requests |
 | `NEXT_PUBLIC_KLAVIYO_SITE_ID` | Public | No | Reserved for a future supported onsite/chat loader; currently unused |
 
 The revision was checked against Klaviyo's profile, event, and subscription documentation on 2026-11-02. A key for those planned operations needs the endpoint-required profile/event/list/subscription write scopes; consult the [integration brief](SIDEQUEST-Zone-Purposes-and-Klaviyo-Setup.md) and current provider docs before enabling delivery.
 
-The browser has no independent demo/live toggle. Current UI labels all actions as demo; live mode cannot perform delivery in this scaffold. A public Site ID identifies an onsite integration and is not a substitute for a private key. `NEXT_PUBLIC_` values can be included in built browser bundles, so changing them may require rebuilding. Database, payment, and AI keys are deliberately absent because those services are not implemented or required for this foundation.
+The browser has no independent demo/live toggle. The subscription form reads only the public mode from `GET /api/subscribe` and distinguishes simulation from an accepted request. Accepted subscription jobs are not presented as confirmed subscription or email delivery. A public Site ID identifies an onsite integration and is not a substitute for a private key. `NEXT_PUBLIC_` values can be included in built browser bundles, so changing them may require rebuilding. Database, payment, and AI keys are deliberately absent because those services are not implemented or required for this foundation.
 
 ## Artwork and accessibility
 
@@ -128,7 +129,7 @@ Deploy this combined application on a host that supports the Next.js Node.js ser
 
 Run type checks, lint, and Vitest before committing relevant changes. Playwright builds and starts the application in demo mode and covers desktop/mobile Chromium, a real canvas hotspot, shared cart navigation/reload, demo checkout, and the simulated subscription response. These tests do not verify Klaviyo account behavior or final artwork fidelity.
 
-The next product work is to prepare reference-derived assets, implement movement/collision and dialogue, finish the Oracle flow and session preferences, and wire deliberate domain events to verified server adapters. Live account setup, identity rules, request abuse protection, retries/deduplication, and consent/confirmation evidence must precede external delivery. The supported chat widget needs its own account and loader setup.
+The next product work is to prepare reference-derived assets, implement movement/collision and dialogue, finish the Oracle flow and session preferences, and wire deliberate domain events to the server adapters. The adapters now implement bounded retries and stable event IDs. Identity rules, durable request abuse protection, and consent/confirmation evidence remain part of the production rollout. The supported chat widget needs its own account and loader setup.
 
 ## References
 

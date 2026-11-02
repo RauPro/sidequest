@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { identifyProfile } from "@/server/klaviyo/profiles";
 import { recordEvent } from "@/server/klaviyo/events";
 import { subscribeProfile } from "@/server/klaviyo/subscriptions";
-import { POST as subscribeRoute } from "@/app/api/subscribe/route";
+import { GET as subscribeConfig, POST as subscribeRoute } from "@/app/api/subscribe/route";
 
 const email = "sidequest-test@example.com";
 const event = { email, event: "Sidequest Product Viewed" as const, eventId: "0305ce7f-9963-4ab8-9bf9-d702c0ac76fd", properties: { productId: "ember" as const } };
@@ -22,6 +22,12 @@ beforeEach(() => {
 afterEach(() => { vi.useRealTimers(); vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
 describe("live Klaviyo adapters with mocked transport", () => {
+  it("exposes only public mode configuration", async () => {
+    const response = await subscribeConfig();
+    expect(await response.json()).toEqual({ mode: "live" });
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
   it("maps preferences inside profile attributes without claiming consent", async () => {
     mockFetch.mockResolvedValueOnce(profile());
     const result = await identifyProfile({ email, preferences: { preferredCompanion: "ember", deskMood: "bold", visualStyle: "fantasy" } });

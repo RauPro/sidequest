@@ -37,14 +37,16 @@ npm run test:e2e
 - App Router pages and a shared client cart provider with versioned local persistence.
 - A browser-only Phaser scene with four clickable location placeholders and equivalent DOM navigation.
 - A three-product demo catalog, starter recommendation rule, bag controls, and simulated checkout.
-- Validated `/api/identify`, `/api/events`, and `/api/subscribe` contracts with explicitly simulated responses.
+- Validated `/api/identify`, `/api/events`, and `/api/subscribe` contracts with no-network demo mode and gated live adapters.
 - Unit, integration, and browser test coverage for the foundation.
 
 ## Implementation boundaries
 
-The reference artwork, player movement, full Oracle dialogue, live Klaviyo APIs, event dispatch from shopping actions, and chat widget are future implementation work. The scene is a structural placeholder, not the finished game.
+The map and commerce work can evolve independently of the integration adapters. Live Klaviyo profile, event, and subscription requests are implemented behind `SIDEQUEST_MODE=live`, valid private configuration, and `KLAVIYO_LIVE_ALLOWED_EMAILS` (a comma-separated test-recipient allowlist). Demo remains the default and makes no external requests.
 
-No provider request, subscription, email, or real purchase is made. `SIDEQUEST_MODE=live` returns a configuration error when required values are missing, or `501 live_adapter_pending` when present. Supplying credentials alone does not activate delivery. Live integration needs verified adapters, suitable abuse protection, and account-side testing before release.
+Profile upserts return verified IDs; events and subscriptions report accepted/pending rather than claiming delivery. Subscription preferences are saved before the consent request. No automatic retry occurs after an uncertain subscription outcome. Production release still requires durable abuse controls and account-side verification; the allowlist is a development gate, not authentication.
+
+See [KLAVIYO-INTEGRATION.md](KLAVIYO-INTEGRATION.md) for request contracts, current account setup, verification evidence, and the remaining rollout steps.
 
 Next.js runs development and production builds. There is no Vite application configuration. Vitest uses Vite internally for testing, so Vite can appear in the dependency tree without being the application framework.
 

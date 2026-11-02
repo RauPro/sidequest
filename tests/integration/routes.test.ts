@@ -9,6 +9,7 @@ function request(body: unknown, path = "subscribe") {
 
 beforeEach(() => {
   vi.stubEnv("SIDEQUEST_MODE", "demo");
+  vi.stubEnv("KLAVIYO_LIVE_ALLOWED_EMAILS", "");
   vi.stubGlobal("fetch", vi.fn(() => { throw new Error("Unexpected external request"); }));
 });
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
