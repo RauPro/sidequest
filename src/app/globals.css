@@ -18,11 +18,7 @@ main { max-width: 1050px; margin: auto; padding: 32px 24px 64px; }
 .page-intro { margin-bottom: 32px; max-width: 750px; }
 .page-intro p, .muted { color: var(--muted); }
 .eyebrow { color: var(--gold) !important; font-size: .75rem; text-transform: uppercase; letter-spacing: .18em; }
-.world-frame { position: relative; overflow: hidden; border: 1px solid var(--line); background: #172d2d; aspect-ratio: 8/5; }
-.game-host { width: 100%; height: 100%; }
-.game-host canvas { display: block; }
-.location-nav, .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
-.location-nav button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; line-height: 1.2; text-align: left; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
 .location-purpose { font-size: .8rem; color: var(--muted); }
 .products { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
 .product, .panel { padding: 24px; border: 1px solid var(--line); background: var(--panel); border-radius: 6px; }
@@ -42,3 +38,29 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
 .skip-link { position: absolute; top: -100px; left: 20px; background: var(--panel); padding: 12px; z-index: 10; }
 .skip-link:focus { top: 12px; }
 @media (max-width: 620px) { .products, .support-grid { grid-template-columns: 1fr; } main { padding: 24px 16px 40px; } .site-header { padding: 20px 16px; } .panel, .product { padding: 20px; } }
+
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.game-shell { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; margin: 0; padding: 0; overflow: hidden; background: #101c1e; }
+.game-stage { position: absolute; inset: 0; }
+.game-stage canvas { display: block; }
+.hud-top { position: absolute; top: 0; left: 0; right: 0; z-index: 20; display: flex; align-items: center; gap: 18px; padding: 8px 16px; background: rgba(15, 22, 38, .92); border-bottom: 2px solid #c79a55; color: #f3e3c0; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+.hud-brand { font-family: Georgia, serif; color: #e0b45c; letter-spacing: .14em; }
+.hud-title { flex: 1; font-family: Georgia, serif; font-size: .95rem; letter-spacing: .08em; }
+.hud-bag { min-height: 44px; padding: 6px 12px; background: none; border: 2px solid #c79a55; color: #f3e3c0; font-family: inherit; font-size: .9rem; }
+.hud-shop { min-height: 44px; display: inline-flex; align-items: center; padding: 6px 12px; border: 2px solid #c79a55; color: #f3e3c0; text-decoration: none; font-size: .9rem; }
+.places-menu { position: absolute; left: 12px; bottom: 12px; z-index: 20; display: flex; flex-wrap: wrap; gap: 8px; max-width: 62%; }
+.places-menu button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 44px; padding: 8px 12px; line-height: 1.2; text-align: left; background: rgba(20, 29, 49, .92); border: 2px solid #c79a55; color: #f3e3c0; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .95rem; }
+.hint-bar { position: absolute; right: 12px; bottom: 12px; z-index: 20; max-width: 42%; margin: 0; padding: 8px 12px; background: rgba(20, 29, 49, .92); border: 2px solid #c79a55; color: #f3e3c0; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .88rem; }
+.game-loader { position: absolute; left: 50%; top: 50%; z-index: 30; transform: translate(-50%, -50%); margin: 0; padding: 10px 16px; background: rgba(20, 29, 49, .95); border: 2px solid #c79a55; color: #f3e3c0; }
+.game-loader a { color: #e0b45c; }
+.game-panel { position: absolute; top: 60px; right: 12px; z-index: 30; width: min(420px, 40vw); max-height: calc(100% - 140px); overflow-y: auto; padding: 16px; background: rgba(20, 29, 49, .97); border: 2px solid #c79a55; color: var(--text); }
+.game-panel .products { grid-template-columns: 1fr; }
+.panel-close { margin-bottom: 10px; padding: 8px 14px; min-height: 44px; background: none; border: 2px solid #c79a55; color: #f3e3c0; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .9rem; }
+@media (max-width: 720px) {
+  .hud-top { gap: 10px; padding: 6px 10px; font-size: .85rem; }
+  .hud-title { font-size: .8rem; }
+  .places-menu { left: 8px; right: 8px; bottom: 8px; max-width: none; gap: 6px; }
+  .places-menu button { padding: 6px 10px; font-size: .85rem; }
+  .hint-bar { left: 8px; right: 8px; bottom: auto; top: 56px; max-width: none; font-size: .8rem; }
+  .game-panel { top: auto; bottom: 0; left: 0; right: 0; width: auto; max-height: 65vh; }
+}

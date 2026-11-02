@@ -21,4 +21,4 @@ export const locations: readonly VillageLocation[] = [
   { id: "post", name: "Post Office", purpose: "Get village letters", directions: "on the west side of the plaza", footprint: { col: 1, row: 9, cols: 6, rows: 8 }, entrance: { col: 4, row: 17 }, hitArea: { x: 12, y: 124, width: 120, height: 150 } },
 ];
 
-export const villageMapDescription = `Map of Willow Market. ${locations.map((l) => `${l.name}: ${l.purpose.toLowerCase()}, ${l.directions}.`).join(" ")} Use the location buttons below the map to visit each place.`;
+export const villageMapDescription = `Map of Willow Market. ${locations.map((l) => `${l.name}: ${l.purpose.toLowerCase()}, ${l.directions}.`).join(" ")} Use the location buttons to visit each place.`;

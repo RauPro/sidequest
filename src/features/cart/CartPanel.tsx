@@ -10,7 +10,7 @@ export function CartPanel() {
   const { cart, store } = useCart();
   const lines = cartLines(cart);
   return <Panel title="Your backpack">
-    {!lines.length && <p>Your bag is empty. Choose a companion above.</p>}
+    {!lines.length && <p>Your bag is empty. Visit the Market or Shop view to choose a companion.</p>}
     {lines.map(({ product, quantity, totalMinor }) => <div className="cart-line" key={product.id}>
       <span>{product.name} · {formatMoney(product.priceMinor)} each</span>
       <div className="quantity">

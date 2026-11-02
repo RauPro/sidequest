@@ -3,6 +3,8 @@ import { paintForeground, paintGround } from "./terrain";
 import { buildingSprites } from "./buildings";
 import { propSprites } from "./props";
 import { paintPlayerSheet } from "./actors";
+import { villageDecor } from "../world/decor";
+import { villageProps } from "../world/villageMap";
 
 export type PaintFn = (ctx: Ctx) => void;
 export type SpriteArt = { key: string; width: number; height: number; paint: PaintFn };
@@ -18,18 +20,11 @@ export type VillageArt = {
 };
 
 const at = (key: string, x: number, y: number, depth?: number): Placement => ({ key, x, y, originX: 0.5, originY: 1, depth });
-const lanternAt = (x: number, y: number): Placement[] => [at("lantern", x, y)];
 const light = (x: number, y: number, radius: number, color: number, alpha: number): Light => ({ x, y, radius, color, alpha });
 
 const WARM = 0xffc36b;
 const FIRE = 0xff8c3c;
 const VIOLET = 0xa082e6;
-
-const lanternSpots = [
-  [152, 168], [328, 168], [152, 264], [328, 264],
-  [312, 146], [394, 146], [330, 248], [406, 252],
-  [216, 336], [240, 368],
-] as const;
 
 export function buildVillageArt(): VillageArt {
   return {
@@ -41,29 +36,14 @@ export function buildVillageArt(): VillageArt {
       at("bld-oracle", 456, 128),
       at("bld-post", 64, 272),
       at("bld-camp", 496, 320),
-      at("merchant", 280, 176),
-      at("oracle-table", 456, 144),
-      at("post-sign", 120, 224, 273),
-      at("mailbox", 120, 256),
-      at("cat-crate", 24, 288),
-      at("camp-sign", 424, 288),
-      at("log-seat", 424, 336),
-      at("campfire", 440, 336),
-      at("camp-kid", 456, 336),
-      at("dog", 504, 336),
+      ...villageProps.map((p) => at(p.id, p.col * 16 + 8, (p.row + 1) * 16)),
       at("owl", 26, 82),
       at("bridge-rail-upper", 360, 144),
       at("bridge-rail-lower", 368, 256),
-      at("barrel", 162, 164),
-      at("crate", 176, 164),
-      at("pot", 308, 164),
-      at("pot", 318, 166),
-      at("stump", 470, 336),
-      at("stump", 522, 334),
-      ...lanternSpots.flatMap(([x, y]) => lanternAt(x, y)),
+      ...villageDecor.map((d) => at(d.kind, d.x, d.y)),
     ],
     lights: [
-      ...lanternSpots.map(([x, y]) => light(x + 2, y - 15, 26, WARM, 0.5)),
+      ...villageDecor.filter((d) => d.kind === "lantern").map((d) => light(d.x + 2, d.y - 15, 26, WARM, 0.5)),
       light(232, 104, 74, WARM, 0.5),
       light(274, 146, 20, WARM, 0.45),
       light(456, 116, 28, VIOLET, 0.5),

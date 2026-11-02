@@ -21,6 +21,6 @@ export function DemoCheckout() {
     <p>{order.lines.map((line) => `${line.quantity} × ${line.name}`).join(", ")} · {formatMoney(order.totalMinor)}</p>
     <button onClick={() => { completing.current = false; setOrder(null); }}>Start another demo order</button>
   </div>;
-  return <><p className="muted">Review the bag above. This checkout is simulated; no payment or delivery takes place.</p>
+  return <><p className="muted">Review your bag. This checkout is simulated; no payment or delivery takes place.</p>
     <button disabled={!cartCount(cart)} onClick={complete}>Complete demo checkout</button></>;
 }

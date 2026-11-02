@@ -2,15 +2,22 @@
 
 import { useEffect, useRef } from "react";
 import { createGame } from "@/game/config";
+import type { GameBridge } from "@/game/systems/bridge";
 import { villageMapDescription } from "@/game/world/locations";
-import type { LocationHandler, SceneReadyHandler } from "@/game/systems/interaction";
 
-export default function PhaserHost({ onLocation, onReady }: { onLocation: LocationHandler; onReady: SceneReadyHandler }) {
+export default function PhaserHost({ bridge }: { bridge: GameBridge }) {
   const host = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!host.current) return;
-    const game = createGame(host.current, onLocation, onReady);
+    const game = createGame(host.current, bridge);
     return () => { game.destroy(true); };
-  }, [onLocation, onReady]);
-  return <div ref={host} className="game-host" role="img" aria-label={villageMapDescription} />;
+  }, [bridge]);
+  return <div
+    ref={host}
+    className="game-stage"
+    data-game-stage
+    tabIndex={0}
+    role="application"
+    aria-label={`${villageMapDescription} Use the arrow keys or WASD to walk and E to enter a place.`}
+  />;
 }
