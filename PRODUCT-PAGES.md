@@ -24,11 +24,11 @@ In Klaviyo **Content → Products → Manage Custom Catalog Sources**, define th
 | --- | --- | --- |
 | `id` | `$id` | Text |
 | `title` | `$title` | Text |
-| `link` | `$link` | Text |
-| `image_link` | `$image_link` | Text |
+| `link` | `$link` | URL |
+| `image_link` | `$image_link` | URL |
 | `description` | `$description` | Text |
 | `price` | `$price` | Number |
-| `categories` | `categories` | List |
+| `categories` | `$categories` | Categories (List) |
 | `currency` | `currency` | Text |
 | `availability` | `availability` | Text |
 
@@ -44,3 +44,14 @@ Prices are dollar amounts (24, 18, 28), not minor units. Availability describes 
 Personalized recommendations and product blocks may require Klaviyo Support to configure the catalog's event metric and ProductID mapping. Catalog synchronization alone does not install tracking, enable subscription delivery, or activate the welcome flow.
 
 Reference checked November 2, 2026: [Klaviyo custom catalog guide](https://developers.klaviyo.com/en/docs/guide_to_syncing_a_custom_catalog_feed_to_klaviyo).
+
+## Verified setup — November 2, 2026
+
+- Vercel project: `paypalrau-9729s-projects/sidequest`.
+- Klaviyo source: [SIDEQUEST companions](https://www.klaviyo.com/catalog/sources/88729), status **Sync Complete**.
+- All three items are **Published**: Ember (`ember`), Moss (`moss`), Bolt (`bolt`). The imported Ember record was verified with its image, product link, price 24, demo description and categories.
+- Public product pages, PNGs and JSON feed all returned HTTP 200 without authentication.
+- Type checking, lint, 32 unit/integration tests and 18 desktop/mobile browser tests passed for this release.
+- Release branch: `feat/klaviyo-product-feed`, isolated from ongoing uncommitted game work. Merge its catalog work before deploying another branch, or the feed and image routes will disappear.
+- The release removes the duplicate products layout because the committed store layout already supplies the shared header/main. If merging with the upcoming full-screen game shell (where the store layout only supplies the cart provider), retain that version's route-specific products layout instead. Keep exactly one header/main per product page.
+- The welcome flow, messaging, tracking and live subscriptions were not changed.
