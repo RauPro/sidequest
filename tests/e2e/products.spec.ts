@@ -10,6 +10,8 @@ for (const product of products) {
   test(`${product.name} has a local product page with its own metadata`, async ({ page }, testInfo) => {
     const response = await page.goto(`/products/${product.id}`);
     expect(response?.status()).toBe(200);
+    await expect(page.getByRole("navigation", { name: "Main navigation" })).toHaveCount(1);
+    await expect(page.locator("main")).toHaveCount(1);
     await expect(page).toHaveTitle(`${product.name} — Desk companion · SIDEQUEST`);
     await expect(page.getByRole("heading", { level: 1, name: product.name, exact: true })).toBeVisible();
     await expect(page.getByText(product.subtitle, { exact: true })).toBeVisible();
