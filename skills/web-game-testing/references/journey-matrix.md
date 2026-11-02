@@ -9,6 +9,11 @@ Use only scenarios relevant to the changed behavior and product requirements. Th
 | Hold a movement key and open a form | Movement stops; typing, arrow editing, and form navigation remain functional |
 | Close a modal | Focus returns to its opener or a stable equivalent; no duplicate interaction |
 | Restart a scene or remount the host | One active canvas and one domain action per interaction |
+| Enter a game route directly in the production Next.js build | No server-side browser API error; loading resolves to an interactive game |
+| Navigate world to shop and back with client routing | Shared cart survives; game remounts without duplicate callbacks |
+| Hydrate a browser-saved cart | Initial server/client markup agrees; persistence does not erase stored items |
+| Send malformed or unauthorized input to a Route Handler | Appropriate failure response; no unintended provider call |
+| Render two visitors with different private state | No shared server-store or cache disclosure |
 | Add products from village and Shop view | Shared quantities, item count, and totals agree |
 | Reload a saved cart | Valid products survive; malformed or unsupported storage does not crash the app |
 | Block storage writes | Current shopping session still works |
@@ -21,6 +26,7 @@ Use only scenarios relevant to the changed behavior and product requirements. Th
 | Enable reduced motion | Optional effects reduce; core shopping remains usable |
 | Fail a texture or optional service | Useful fallback remains; loading or error state is explicit |
 | Provider returns timeout, 429, or validation failure | Bounded retry where appropriate; recoverable truthful UI; stable logical event ID |
+| Start demo mode without provider credentials | Pages build and render; no accidental live request or secret requirement |
 
 For performance investigations, measure the target device and the actual scenario: startup to usable scene, frame pacing while moving, and memory/listener behavior over repeated open-close cycles. Avoid inventing universal performance thresholds from a desktop run. Capture console and failed asset-request evidence when diagnosing initialization problems.
 

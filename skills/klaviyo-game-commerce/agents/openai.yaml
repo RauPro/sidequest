@@ -1,4 +1,4 @@
 interface:
   display_name: "Klaviyo Game Commerce"
   short_description: "Connect game commerce events and explicit consent"
-  default_prompt: "Use $klaviyo-game-commerce to implement the requested Klaviyo integration."
+  default_prompt: "Use $klaviyo-game-commerce to implement the requested Klaviyo integration through Next.js server endpoints."

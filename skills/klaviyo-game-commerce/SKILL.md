@@ -1,6 +1,6 @@
 ---
 name: klaviyo-game-commerce
-description: Implement or validate Klaviyo profiles, custom events, and explicit email subscription in game-like web storefronts, with demo/live separation, server-held credentials, stable event identities, and truthful delivery states. Use when Klaviyo is requested or already part of the project; this skill does not authorize campaigns or test email sends by itself.
+description: Implement or validate Klaviyo profiles, custom events, and explicit email subscription in Next.js game storefronts, with Route Handlers, server-held credentials, demo/live separation, stable event identities, and truthful delivery states. Use when Klaviyo is requested or already part of the project; this skill does not authorize campaigns or test email sends by itself.
 ---
 
 # Klaviyo for interactive commerce
@@ -16,7 +16,8 @@ Record the chosen revision and SDK version in implementation documentation. Do n
 ## Application boundary
 
 - Use explicit demo/live configuration. Demo subscription and checkout should not call the provider or imply that a message was sent.
-- Keep private API keys server-side with needed scopes only. `VITE_` variables are exposed to the browser; they are not a secret store. Distinguish public site identifiers from private credentials.
+- Use Next.js Route Handlers for the required browser-facing operations and a reusable `server-only` module for the Klaviyo adapter. Server Components should call server services directly for needed reads, without a loopback request to their own API.
+- Keep private API keys in server environment variables with needed scopes only. `NEXT_PUBLIC_` variables are exposed to the browser; they are not a secret store. Distinguish public site identifiers from private credentials and keep private SDK imports out of the client bundle.
 - Validate the server's incoming action schema, allowed event names, and property types. Do not expose an unrestricted relay to arbitrary Klaviyo endpoints. Apply proportionate request limits to public subscription/event endpoints.
 - Associate preferences with a profile only through the intended identification flow. Avoid fabricated identifiers or retroactive attribution of unrelated anonymous activity.
 - Keep provider errors outside core cart mutation. Use redacted diagnostic information and correlation IDs instead of logging complete personal data or credentials.
@@ -41,5 +42,6 @@ Consulted 2026-11-02; recheck endpoint details at implementation time.
 - [Consent API guidance](https://developers.klaviyo.com/en/docs/collect_email_and_sms_consent_via_api)
 - [Authentication](https://developers.klaviyo.com/en/docs/authenticate_)
 - [Rate limits and errors](https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling)
-- [Vite environment variables](https://vite.dev/guide/env-and-mode)
+- [Next.js environment variables](https://nextjs.org/docs/app/guides/environment-variables)
+- [Next.js backend for frontend](https://nextjs.org/docs/app/guides/backend-for-frontend)
 - Context7: resolved `/websites/developers_klaviyo_en`, queried event identity and accepted-response semantics.

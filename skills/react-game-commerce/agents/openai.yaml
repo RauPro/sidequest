@@ -1,4 +1,4 @@
 interface:
   display_name: "React Game Commerce"
   short_description: "Share accessible commerce across game and shop views"
-  default_prompt: "Use $react-game-commerce to implement a shared cart and accessible demo checkout."
+  default_prompt: "Use $react-game-commerce to implement a shared cart and accessible demo checkout in Next.js."

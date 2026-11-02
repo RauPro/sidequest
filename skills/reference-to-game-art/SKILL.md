@@ -34,6 +34,8 @@ Read [sprite-export.md](references/sprite-export.md) for Aseprite/export decisio
 
 Check sprites on both dark and light backgrounds, at native and intended display scales. Verify foot anchors through a full walk cycle and foreground occlusion on both sides of an object. Preview atlas edges under the actual filtering mode. Confirm exported assets load from the production build and deployment base path.
 
+For the Next.js application, keep runtime textures, atlases, and maps in a served asset location such as `public/game/`. Give Phaser URL strings and preserve atlas/tileset relative paths; `next/image` is for DOM imagery, not the engine's texture loader. Verify any base path or CDN prefix explicitly, including on direct nested-route entry. Keep editable source artwork separate from published runtime assets.
+
 For mobile, adapt the viewport and interface separately. A fixed illustration with all labels and buttons embedded cannot simply be scaled down into a usable phone interface.
 
 ## Sources
@@ -44,3 +46,4 @@ Consulted 2026-11-02. Tool-specific export options should be checked against the
 - [Aseprite command line](https://www.aseprite.org/docs/cli/)
 - [Tiled introduction](https://docs.mapeditor.org/en/stable/manual/introduction/)
 - [Tiled JSON format](https://docs.mapeditor.org/en/stable/reference/json-map-format/)
+- [Next.js public assets](https://nextjs.org/docs/app/api-reference/file-conventions/public-folder)

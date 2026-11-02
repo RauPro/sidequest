@@ -1,4 +1,4 @@
 interface:
   display_name: "Web Game Testing"
-  short_description: "Verify game input, commerce, and browser journeys"
-  default_prompt: "Use $web-game-testing to verify the changed game behavior and shopping journey."
+  short_description: "Verify Next.js game journeys and backend boundaries"
+  default_prompt: "Use $web-game-testing to verify the Next.js game, shopping journey, and changed API behavior."

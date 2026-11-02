@@ -2,6 +2,8 @@
 
 Use a per-host adapter with a narrow interface, for example `dispatch(command)`, `subscribe(handler)`, and `dispose()`. These are suggested application boundaries, not Phaser APIs. Subscribe before exposing readiness so that initialization events are not lost. Rehydrate the current application snapshot whenever a scene becomes ready; transient events alone cannot restore state after a restart.
 
+In Next.js, place the engine host behind a Client Component's `next/dynamic(..., { ssr: false })` boundary. Keep Phaser runtime imports in the dynamically loaded module. A normal Client Component can still be prerendered, so a top-level browser API access is not safe merely because the file says `'use client'`. Shared application state should outlive route-specific game instances; choose a common client provider when the world and Shop view occupy separate routes.
+
 ## Teardown
 
 Track each resource where it is created: external bus listeners, DOM/window handlers, observers, timers, audio resources, and async work. Scene-owned resources and global listeners have different lifetimes. A listener on a long-lived game or application emitter can survive a scene restart and must be removed using its original callback/context.
@@ -25,5 +27,6 @@ If a game view is hidden instead of unmounted, decide whether to sleep its scene
 3. Hold a movement key, open a form, type and use arrows: the visitor stops and form input works.
 4. Change cart state repeatedly: the game instance survives and only the relevant companion display changes.
 5. Resize and scroll the page, then tap a known destination: coordinates still target that destination.
+6. Load the game URL directly in a production Next.js build, navigate to Shop view and back: no server-side browser API error, duplicate game, or lost cart.
 
-Sources: [Phaser game setup](https://github.com/phaserjs/phaser/blob/master/skills/game-setup-and-config/SKILL.md), [Phaser events](https://github.com/phaserjs/phaser/blob/master/skills/events-system/SKILL.md), [React useEffect](https://react.dev/reference/react/useEffect). Engine lifecycle findings were cross-checked through Context7 on 2026-11-02.
+Sources: [Phaser game setup](https://github.com/phaserjs/phaser/blob/master/skills/game-setup-and-config/SKILL.md), [Phaser events](https://github.com/phaserjs/phaser/blob/master/skills/events-system/SKILL.md), [React useEffect](https://react.dev/reference/react/useEffect), [Next.js lazy loading](https://nextjs.org/docs/app/guides/lazy-loading). Engine lifecycle findings were cross-checked through Context7 on 2026-11-02.

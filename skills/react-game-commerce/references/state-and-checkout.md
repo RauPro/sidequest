@@ -10,13 +10,15 @@ Calculate line totals and subtotal from current catalog values. Keep currency co
 
 ## Storage hydration
 
-1. Read a namespaced, versioned record once at initialization.
+1. Render a deterministic initial state on the server and first client render. Read a namespaced, versioned browser record once after the client provider mounts.
 2. Catch access and JSON parsing failures without crashing the app.
 3. Validate or migrate known schema versions. Discard unsupported fields; handle retired IDs and invalid quantities according to a documented recovery rule.
 4. Commit the recovered in-memory state, then enable persistence.
 5. Report persistence failure only as usefully as the product requires; keep the current session usable.
 
 Do not persist secrets, raw payment information, or unnecessary contact data. Persisting totals is unnecessary if they can be derived. If cross-tab synchronization is in scope, define conflict behavior and avoid echoing storage updates indefinitely; do not add it to a single-tab prototype without need.
+
+In Next.js, avoid `localStorage` access in module scope or a server-evaluated render initializer. Keep persistence disabled until hydration is complete; repeated development effect setup must not overwrite the saved state. A common layout can retain a client provider across world/shop routes, while a page or template provider may remount. Server-fetched initial state must be scoped to the requesting visitor and match the first client snapshot.
 
 ## Recommendations
 
@@ -32,6 +34,7 @@ Assign one demo order ID per logical completion. Repeated clicks must not create
 
 - Add two different products from two different views; counts and totals agree.
 - Reload with a valid, corrupted, and obsolete saved cart; the application remains usable.
+- Enter each Next.js route directly and navigate between views; hydration produces no mismatch, lost cart, or cross-request state leak.
 - Fail storage writes; shopping continues in memory.
 - Complete checkout twice rapidly; exactly one snapshot and one completion event result.
 - Clear the cart after completion; the confirmation retains correct items and amounts.

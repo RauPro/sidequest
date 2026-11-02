@@ -6,7 +6,11 @@ For each event, specify trigger, allowed properties, identity source, logical ev
 
 A server adapter translates this internal contract to the exact provider schema. Check required JSON:API nesting, headers, revision, and SDK method signatures using current documentation. An instructional excerpt is not a substitute for the full endpoint contract. Use a supported API revision intentionally rather than a date guessed from the current calendar.
 
+In Next.js, place HTTP handling in the relevant `app/api/.../route.ts` and provider work in a `server-only` module using private `process.env` values. Validate browser inputs before invoking the adapter. Keep subscription/event mutations out of page rendering and static generation. A server-capable deployment is required for these live endpoints; static export cannot execute them.
+
 For a prototype, persist only the retry state needed by the requirement. Production durability may need a server queue/outbox, but do not introduce that infrastructure to a mocked demo. In either case, retain the original logical event identity during retries and prevent duplicate UI submissions while an operation is pending.
+
+Do not rely on a Next.js process-global queue or detached promise to survive serverless request completion or restarts. Await the required operation, or use durable infrastructure when delivery guarantees require it. Check runtime compatibility before choosing Edge for a provider SDK.
 
 ## Retry policy
 

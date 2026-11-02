@@ -1,19 +1,20 @@
 ---
 name: phaser-react-game
-description: Build or debug 2D browser games that embed Phaser in React and TypeScript, including Vite setup, scene lifecycle, input ownership, resizing, and communication with DOM interfaces. Use for Phaser-based worlds and game/web integration; ordinary React pages do not need this skill.
+description: Build or debug 2D browser games that embed Phaser in Next.js with React and TypeScript, including client-only loading, scene lifecycle, input ownership, resizing, and communication with DOM interfaces. Use for Phaser-based worlds and game/web integration; ordinary React pages do not need this skill.
 ---
 
 # Phaser with React
 
-Keep frame-by-frame simulation in Phaser and application UI in React. Preserve the project's chosen framework and installed engine major; do not upgrade an existing game just to match an example.
+Keep frame-by-frame simulation in Phaser and application UI in React, with Next.js App Router as the application framework for this stack. Preserve the installed engine major; do not upgrade an existing game just to match an example.
 
 ## Establish the implementation boundary
 
-- Inspect package versions, lockfile, entrypoints, game mounting, and existing state ownership. For a new project, use the official React/TypeScript/Vite template as a reference, inspecting its current dependencies before adoption.
+- Inspect package versions, lockfile, App Router boundaries, game mounting, and existing state ownership. For a new project, use a Next.js App Router setup and consult the official Phaser/Next.js template for engine integration. Check its dependencies and router conventions before adopting code.
 - Use Context7 when available: resolve Phaser, then query the installed major and the specific API involved. If retrieved examples target another major, verify against installed types and official documentation. Do not assume a template title identifies its actual version.
 - Phaser owns movement, camera, collisions, sprites, and transient scene objects. React owns navigation, product panels, forms, cart, and accessible dialogue.
 - Keep application data outside scene instances. Exchange typed semantic commands such as `open-location` or `inspect-product`; avoid publishing player coordinates to React every frame.
-- Load the engine only when needed if the direct web interface should remain lightweight. If using SSR, instantiate and access browser APIs only on the client.
+- Load the engine through `next/dynamic` with `ssr: false` inside a Client Component. Keep runtime Phaser imports behind that boundary; `'use client'` alone does not disable prerendering. Instantiate and access browser APIs only on the client.
+- Keep server endpoints and provider credentials outside the game bundle. Send intentional integration actions to Next.js Route Handlers, which validate them independently.
 
 ## Mount and restart safely
 
@@ -41,7 +42,8 @@ Exercise one location with pointer and keyboard, open and close its panel, resiz
 
 Consulted 2026-11-02; recheck version-specific APIs during implementation.
 
-- [Official React/TypeScript template](https://github.com/phaserjs/template-react-ts)
+- [Official Phaser/Next.js template](https://github.com/phaserjs/template-nextjs)
+- [Next.js client-only loading](https://nextjs.org/docs/app/guides/lazy-loading)
 - [Phaser documentation](https://phaser.io/oss/docs/phaser/getting-started/project-templates)
 - Context7: resolved `/phaserjs/phaser` for game destruction and scene event lifecycle.
 - [React effect lifecycle](https://react.dev/reference/react/useEffect)
