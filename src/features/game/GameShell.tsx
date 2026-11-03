@@ -3,10 +3,17 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useState, type SyntheticEvent } from "react";
+import { cartCount } from "@/domain/cart";
 import { createGameBridge } from "@/game/systems/bridge";
 import { locations, type LocationId } from "@/game/world/locations";
-import { BagCount } from "@/features/cart/BagCount";
+import { useCart } from "@/features/cart/CartProvider";
 import { GamePanel } from "./GamePanel";
+import { GameHud } from "./GameHud";
+import { QuestCard } from "./QuestCard";
+import {
+  updateQuestProgress,
+  useQuestProgress,
+} from "./quest";
 
 const PhaserHost = dynamic(() => import("@/features/world/PhaserHost"), {
   ssr: false,
@@ -22,22 +29,37 @@ export function GameShell() {
   const [panel, setPanel] = useState<LocationId | "bag" | null>(null);
   const [slow, setSlow] = useState(false);
   const [opener, setOpener] = useState<HTMLElement | null>(null);
+  const quest = useQuestProgress();
+  const { cart } = useCart();
 
   useEffect(() => bridge.subscribe((e) => {
     if (e.type === "ready") setReady(true);
-    if (e.type === "open") { setOpener(document.querySelector("[data-game-stage]")); setPanel(e.id); }
+    if (e.type === "open") {
+      setOpener(document.querySelector("[data-game-stage]"));
+      setPanel(e.id);
+      if (e.id === "market") updateQuestProgress((current) => ({ ...current, market: true }));
+    }
+    if (e.type === "open-bag") {
+      setOpener(document.querySelector("[data-game-stage]"));
+      setPanel("bag");
+    }
     if (e.type === "nearby") setNearby(e.id);
     if (e.type === "hover") setHover(e.id);
     if (e.type === "player-tile") setTile({ col: e.col, row: e.row });
   }), [bridge]);
   useEffect(() => { bridge.dispatch({ type: "input", enabled: panel === null }); }, [bridge, panel]);
   useEffect(() => {
+    if (cartCount(cart) > 0) updateQuestProgress((current) => ({ ...current, bag: true }));
+  }, [cart]);
+  useEffect(() => {
     const t = setTimeout(() => setSlow(true), 10000);
     return () => clearTimeout(t);
   }, []);
 
-  const openPanel = (id: LocationId | "bag") => (e: SyntheticEvent) => {
-    setOpener(e.currentTarget as HTMLElement);
+  const openPanel = (id: LocationId | "bag") => (e?: SyntheticEvent) => {
+    if (e) setOpener(e.currentTarget as HTMLElement);
+    else setOpener(document.querySelector("[data-game-stage]"));
+    if (id === "market") updateQuestProgress((current) => ({ ...current, market: true }));
     setPanel(id);
   };
   const nearLoc = locations.find((l) => l.id === nearby);
@@ -51,16 +73,13 @@ export function GameShell() {
   return <main id="main" className="game-shell" data-testid="village-map" data-ready={ready ? "true" : undefined} data-player-tile={tile ? `${tile.col},${tile.row}` : undefined}>
     <h1 className="visually-hidden">Willow Market</h1>
     <PhaserHost bridge={bridge} />
-    <header className="hud-top">
-      <span className="hud-brand">SIDEQUEST</span>
-      <span className="hud-title" aria-hidden="true">Willow Market</span>
-      <button className="hud-bag" aria-haspopup="dialog" aria-expanded={panel === "bag"} onClick={openPanel("bag")}><BagCount /></button>
-      <Link className="hud-shop" href="/shop">Shop view</Link>
-    </header>
+    <GameHud title="Willow Market" view="village" onOpenBag={() => openPanel("bag")()} bagOpen={panel === "bag"} />
     {!ready && <p className="game-loader" role="status">Loading village…{slow && <> The map is taking a while. Use the places menu or <Link href="/shop">open Shop view</Link>.</>}</p>}
-    <nav className="places-menu" aria-label="Village locations">{locations.map((l) =>
+    <QuestCard progress={quest} />
+    <nav className="places-menu rpg-frame" aria-label="Village places" data-dialogue-open={panel ? "true" : "false"}>{locations.map((l) =>
       <button
         key={l.id}
+        className="place-button"
         aria-pressed={panel === l.id}
         aria-haspopup="dialog"
         aria-expanded={panel === l.id}
@@ -76,6 +95,10 @@ export function GameShell() {
       </button>)}
     </nav>
     <p className="hint-bar" aria-live="polite">{hint}</p>
+    <aside className="rpg-frame controls-bar" aria-label="Game controls">
+      <span className="controls-keyboard"><kbd>WASD/↑↓←→</kbd> Move <kbd>E</kbd> Interact <kbd>B</kbd> Bag <kbd>Esc</kbd> Close</span>
+      <span className="controls-touch">Tap a path to move · Tap a place to visit</span>
+    </aside>
     {panel && <GamePanel panel={panel} onClose={() => setPanel(null)} opener={opener} />}
   </main>;
 }

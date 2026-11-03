@@ -144,9 +144,13 @@ export class WillowMarket extends Scene {
       const interact = () => {
         if (this.ownsKeys() && this.nearbyId) this.bridge.emit({ type: "open", id: this.nearbyId });
       };
+      const openBag = () => {
+        if (this.ownsKeys()) this.bridge.emit({ type: "open-bag" });
+      };
       this.input.keyboard.on("keydown-E", interact);
       this.input.keyboard.on("keydown-SPACE", interact);
       this.input.keyboard.on("keydown-ENTER", interact);
+      this.input.keyboard.on("keydown-B", openBag);
     }
 
     const blur = () => {
