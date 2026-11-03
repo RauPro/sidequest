@@ -47,6 +47,12 @@ Personalized recommendations and product blocks may require Klaviyo Support to c
 
 Reference checked November 2, 2026: [Klaviyo custom catalog guide](https://developers.klaviyo.com/en/docs/guide_to_syncing_a_custom_catalog_feed_to_klaviyo).
 
+## Inventory rollout — November 3, 2026
+
+The current source is [SIDEQUEST companions](https://www.klaviyo.com/catalog/sources/88816). The original source connection `88729` was recreated to expose the new feed fields; product and variant IDs were preserved. All eleven fields are mapped, including `inventory_quantity` → `$inventory_quantity` and `inventory_policy` → `$inventory_policy` as numbers.
+
+The source completed a sync and a real Bolt restock cycle: zero stock → 100 → zero. The native back-in-stock flow moved the authorized test recipient out of its stock delay and its email arrived in Gmail. The closing production deployment restored `NEXT_PUBLIC_SIDEQUEST_SOLD_OUT=bolt`, and Klaviyo's Bolt variant was verified with inventory 0 and category `Unavailable` at 01:01 America/New_York. The public feed reports Ember 100, Moss 100, and Bolt 0.
+
 ## Verified setup — November 2, 2026
 
 - Vercel project: `paypalrau-9729s-projects/sidequest`.

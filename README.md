@@ -8,13 +8,15 @@ An explorable pixel-art storefront showcasing Klaviyo across the customer journe
 
 ## Reviewer quick tour (2 min)
 
+For a presentation, use the [pitch and demo guide](docs/SIDEQUEST-PITCH.md), including the Klaviyo walkthrough, customer scenario, and technical Q&A.
+
 1. Visit the Oracle.
 2. Add the companion to your bag.
 3. Press **L** to open the Raven Ledger and see each Klaviyo call.
 4. Open [`/?letter=ember`](https://sidequest.raul.engineer/?letter=ember), the email deep link.
 5. Open the [catalog feed](https://sidequest.raul.engineer/catalog/klaviyo.json).
 
-The public site runs in demo mode unless live tracking is configured. See the [Klaviyo account runbook](docs/KLAVIYO-ACCOUNT-RUNBOOK.md) for account-side setup.
+The application defaults to demo mode. See the [Klaviyo account runbook](docs/KLAVIYO-ACCOUNT-RUNBOOK.md) for the production configuration, account-side setup, and dated verification evidence.
 
 ## Klaviyo touchpoints
 
@@ -61,6 +63,8 @@ npm run dev
 ```
 
 Open `http://localhost:3000`. The playable village is `/`; `/shop` and `/products/ember` provide direct store paths. Local configuration defaults to demo mode.
+
+If `.env.local` already exists, preserve it instead of overwriting your configuration. For a presentation fallback, run `npm run demo:build` while online, then `npm run demo:start` to open the prepared, isolated demo at <http://127.0.0.1:3110>. It keeps Bolt sold out and marks provider operations as `simulated`. See the [fallback instructions](docs/KLAVIYO-ACCOUNT-RUNBOOK.md#local-fallback-for-the-presentation).
 
 ## Checks
 

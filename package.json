@@ -13,6 +13,8 @@
     "prebuild": "npm run images:export",
     "build": "next build",
     "start": "next start",
+    "demo:build": "node scripts/local-demo.mjs build",
+    "demo:start": "node scripts/local-demo.mjs start",
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",

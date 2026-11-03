@@ -1,5 +1,7 @@
 node_modules/
 .next/
+.sidequest-demo/
+artifacts/rehearsal/
 out/
 coverage/
 playwright-report/
