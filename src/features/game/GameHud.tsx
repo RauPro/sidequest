@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import type { MouseEvent } from "react";
 import { cartCount } from "@/domain/cart";
 import { useCart } from "@/features/cart/CartProvider";
 
@@ -15,7 +16,7 @@ export function GameHud({
 }: {
   title: string;
   view: GameHudView;
-  onOpenBag: () => void;
+  onOpenBag: (event: MouseEvent<HTMLButtonElement>) => void;
   bagOpen?: boolean;
 }) {
   const { cart } = useCart();
