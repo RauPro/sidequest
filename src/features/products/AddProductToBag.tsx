@@ -30,7 +30,7 @@ export function AddProductToBag({ id }: { id: ProductId }) {
       <button className={styles.addButton} onClick={add} disabled={!product.available || soldOut || atLimit}>
         {soldOut ? "Sold out" : !product.available ? "Currently unavailable" : atLimit ? "Bag limit reached" : `Add ${product.name} to bag`}
       </button>
-      {soldOut && <BackInStockForm productId={id} productName={product.name} />}
+      {soldOut && <BackInStockForm key={id} productId={id} productName={product.name} />}
       <Link href="/shop">View bag in Shop view →</Link>
       <p className={styles.feedback} role="status">{message}</p>
     </div>

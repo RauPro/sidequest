@@ -50,7 +50,7 @@ export function SidePanel({
         <button type="button" className="rpg-btn rpg-btn--primary" disabled={!product.available || soldOut} onClick={() => onAction({ type: "add-to-bag", productId: product.id })}>
           {soldOut ? "Sold out" : "Add to bag"}
         </button>
-        {soldOut && <BackInStockForm productId={product.id} productName={product.name} />}
+        {soldOut && <BackInStockForm key={product.id} productId={product.id} productName={product.name} />}
         {side.browsing && (
           <div className="product-carousel">
             <button type="button" className="rpg-btn" aria-label="Previous companion" onClick={() => onAction({ type: "browse-prev" })}>◀</button>
