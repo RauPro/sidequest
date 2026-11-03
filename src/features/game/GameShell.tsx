@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState, type SyntheticEvent } from "react";
 import { cartCount } from "@/domain/cart";
+import { parseLetterId } from "@/domain/letters";
 import { recommend } from "@/domain/recommendations";
 import { createGameBridge } from "@/game/systems/bridge";
 import { locations, type LocationId } from "@/game/world/locations";
@@ -15,7 +16,7 @@ import { GameHud } from "./GameHud";
 import { QuestCard } from "./QuestCard";
 import { readOracleReading } from "@/features/oracle/reading";
 import { useIdentity } from "@/features/klaviyo/useIdentity";
-import { trackEventOnce } from "@/features/klaviyo/track";
+import { trackEvent, trackEventOnce } from "@/features/klaviyo/track";
 import { RavenLedgerPanel } from "@/features/klaviyo/RavenLedgerPanel";
 import {
   updateQuestProgress,
@@ -69,8 +70,19 @@ export function GameShell() {
       if (!deepLinkHandled.current) {
         deepLinkHandled.current = true;
         const params = new URLSearchParams(window.location.search);
-        const visit = params.get("visit");
-        if (visit) {
+        if (params.has("letter")) {
+          const letter = parseLetterId(params.get("letter"));
+          params.delete("letter");
+          const query = params.toString();
+          window.history.replaceState(window.history.state, "", `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`);
+          if (letter) {
+            setOpener(document.querySelector("[data-game-stage]"));
+            setEncounter({ ...createEncounterState("post"), nodeId: `post-letter-${letter}` });
+            trackEvent("Sidequest Letter Opened", { letter });
+          }
+        } else {
+          const visit = params.get("visit");
+          if (!visit) return;
           const target = visit === "bag" ? "bag" : locations.find((location) => location.id === visit)?.id;
           if (target) {
             setOpener(document.querySelector("[data-game-stage]"));

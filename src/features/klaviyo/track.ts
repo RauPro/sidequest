@@ -4,6 +4,7 @@ import type { ProductId } from "@/domain/catalog";
 import type { DemoOrder } from "@/domain/orders";
 import type { DeskMood, VisualStyle } from "@/domain/recommendations";
 import type { LocationId } from "@/game/world/locations";
+import type { LetterId } from "@/domain/letters";
 import { sendClientEvent } from "./clientApi";
 
 export type TrackProperties = {
@@ -11,6 +12,7 @@ export type TrackProperties = {
   "Sidequest Product Viewed": { productId: ProductId; discoverySource: "market" | "oracle" | "shop" | "camp" };
   "Sidequest Oracle Completed": { recommendedProductId: ProductId; ruleVersion: "2"; deskMood: DeskMood; visualStyle: VisualStyle };
   "Sidequest Camp Question Asked": { topic: "companion" | "checkout" | "shipping" | "custom" };
+  "Sidequest Letter Opened": { letter: LetterId };
   "Sidequest Demo Checkout Completed": { productIds: ProductId[]; quantities: number[]; demoTotalMinor: number; currency: "USD"; demoOrderId: string };
 };
 

@@ -1,5 +1,16 @@
 import { expect, test } from "@playwright/test";
 
+test("letter deep link opens a personalized Post Office letter and visits its companion", async ({ page }) => {
+  await page.goto("/?letter=ember");
+  await expect(page.getByTestId("village-map")).toHaveAttribute("data-ready", "true");
+  const dialog = page.getByRole("dialog", { name: "Milo · Merchant" });
+  await expect(dialog).toContainText("Ember");
+  await expect(page).not.toHaveURL(/letter=/);
+  await dialog.getByRole("button", { name: "Visit Ember at the Market", exact: true }).click();
+  await expect(page.getByRole("complementary", { name: "Ember details" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Add to bag/ })).toBeVisible();
+});
+
 test("Oracle reveals Ember for bold/fantasy and adds the recommendation to the shared bag", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByTestId("village-map")).toHaveAttribute("data-ready", "true");

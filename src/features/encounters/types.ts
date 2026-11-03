@@ -33,7 +33,8 @@ export type EncounterAction =
   | { type: "camp-email-skip" }
   | { type: "send-chat"; content: string; topic: CampTopic }
   | { type: "subscribe" }
-  | { type: "goto-location"; location: LocationId };
+  | { type: "goto-location"; location: LocationId }
+  | { type: "visit-product"; productId: ProductId };
 
 export type Choice = {
   id: string;

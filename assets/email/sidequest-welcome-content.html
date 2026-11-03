@@ -4,15 +4,19 @@
 {% if person|lookup:'preferred_companion' == 'ember' %}
 <h2 style="color:#e79153;font-weight:normal;">Ember is glad you're here.</h2>
 <p>A little courage goes a long way. Your fiery dragon companion brings a bold spirit to the everyday desk.</p>
+<p><a href="https://sidequest.raul.engineer/?letter=ember" style="display:inline-block;padding:12px 18px;background:#dfbb7c;color:#101c1e;text-decoration:none;">Visit Ember at the Market</a></p>
 {% elif person|lookup:'preferred_companion' == 'moss' %}
 <h2 style="color:#9bbd79;font-weight:normal;">Make a quiet corner with Moss.</h2>
 <p>Small pauses count. Your gentle slime companion brings a calmer mood to your workspace.</p>
+<p><a href="https://sidequest.raul.engineer/?letter=moss" style="display:inline-block;padding:12px 18px;background:#dfbb7c;color:#101c1e;text-decoration:none;">Visit Moss at the Market</a></p>
 {% elif person|lookup:'preferred_companion' == 'bolt' %}
 <h2 style="color:#80b8d1;font-weight:normal;">Bolt is ready for your next idea.</h2>
 <p>There is always something to discover. Your curious robot companion is here for the questions, sketches, and experiments.</p>
+<p><a href="https://sidequest.raul.engineer/?letter=bolt" style="display:inline-block;padding:12px 18px;background:#dfbb7c;color:#101c1e;text-decoration:none;">Visit Bolt at the Market</a></p>
 {% else %}
 <h2 style="color:#dfbb7c;font-weight:normal;">Your next companion is waiting.</h2>
 <p>Meet Ember, Moss, and Bolt. Visit the Oracle when you return to the village to find the companion that fits your desk.</p>
+<p><a href="https://sidequest.raul.engineer/?letter=welcome" style="display:inline-block;padding:12px 18px;background:#dfbb7c;color:#101c1e;text-decoration:none;">Return to Willow Market</a></p>
 {% endif %}
 <p>These letters will bring companion news and small updates from the village. You can explore the Market, talk to the Oracle, or browse the shop at your own pace.</p>
 <p style="margin-top:28px;">See you around the village,<br>The SIDEQUEST team</p>

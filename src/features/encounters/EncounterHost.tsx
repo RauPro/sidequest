@@ -157,6 +157,14 @@ export function EncounterHost({
   const commitAction = (action: EncounterAction) => {
     const result = applyEncounterAction(state, action);
     let nextState = result.state;
+    if (action.type === "visit-product") {
+      trackEventOnce("location:market", "Sidequest Location Visited", { location: "market" });
+      trackEventOnce(`product:market:${action.productId}`, "Sidequest Product Viewed", {
+        productId: action.productId,
+        discoverySource: "market",
+      });
+      updateQuestProgress((current) => ({ ...current, market: true }));
+    }
     if (action.type === "oracle-realm" && state.deskMood) {
       saveOracleReading({ mood: state.deskMood, realm: action.realm });
       if (result.state.recommendedProductId) {
