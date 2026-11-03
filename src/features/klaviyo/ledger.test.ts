@@ -44,16 +44,19 @@ describe("Raven Ledger store", () => {
       operation: "subscribe",
       label: `Newsletter request for ${email}`,
       status: "sent",
-      detail: `Recipient ${email}`,
+      detail: `unique_id abcdef12… · Ember · $24.00 · HTTP 202 accepted · Recipient ${email}`,
     });
-    updateLedger(id, { status: "accepted", detail: `Klaviyo accepted ${email}` });
+    updateLedger(id, {
+      status: "accepted",
+      detail: `unique_id abcdef12… · Ember · $24.00 · HTTP 202 accepted · Recipient ${email}`,
+    });
 
     const [entry] = getLedgerSnapshot();
     expect(entry).toMatchObject({
       id,
       status: "accepted",
       label: `Newsletter request for ${maskEmail(email)}`,
-      detail: `Klaviyo accepted ${maskEmail(email)}`,
+      detail: `unique_id abcdef12… · Ember · $24.00 · HTTP 202 accepted · Recipient ${maskEmail(email)}`,
     });
     expect(JSON.stringify(JSON.parse(session.values.get(ledgerStorageKey) ?? "[]"))).not.toContain(email);
   });

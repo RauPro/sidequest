@@ -262,6 +262,7 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
 }
 .rpg-hud .rpg-btn:hover, .rpg-hud .rpg-btn:focus-visible { background: rgb(199 154 85 / 97%); color: var(--ink); }
 .rpg-bag-count { min-width: 22px; height: 22px; display: inline-grid; place-items: center; border-radius: 50%; background: rgb(199 154 85 / 97%); color: var(--ink); font-weight: 500; }
+.rpg-ravens-icon { display: block; flex: 0 0 16px; width: 16px; height: 16px; }
 .rpg-frame {
   position: relative;
   border: 3px solid var(--gold);

@@ -1,5 +1,6 @@
 import { cartLines, cartTotal, type Cart } from "./cart";
 import { getProduct, type ProductId } from "./catalog";
+import { productImagePath } from "./product-image";
 
 export type KlaviyoMetric = {
   metric: string;
@@ -15,7 +16,7 @@ function dollars(minor: number): number {
 
 function productMetrics(productId: ProductId, origin: string) {
   const product = getProduct(productId);
-  const imageURL = `${origin}/game/products/${product.id}.png`;
+  const imageURL = `${origin}${productImagePath(product.id)}`;
   const url = `${origin}/products/${product.id}`;
   return {
     product,

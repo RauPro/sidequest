@@ -5,6 +5,8 @@ test("letter deep link opens a personalized Post Office letter and visits its co
   await expect(page.getByTestId("village-map")).toHaveAttribute("data-ready", "true");
   const dialog = page.getByRole("dialog", { name: "Milo · Merchant" });
   await expect(dialog).toContainText("Ember");
+  await expect(dialog.getByRole("textbox", { name: "Email address", exact: true })).toHaveCount(0);
+  await expect(dialog.getByRole("checkbox", { name: /I agree to receive/ })).toHaveCount(0);
   await expect(page).not.toHaveURL(/letter=/);
   await dialog.getByRole("button", { name: "Visit Ember at the Market", exact: true }).click();
   const details = page.getByRole("complementary", { name: "Ember details" });
@@ -45,13 +47,20 @@ test("Oracle and bag actions appear in the Raven Ledger on village and store vie
   await page.getByRole("button", { name: /Bold/ }).click();
   await page.getByRole("button", { name: /Fantasy/ }).click();
   await page.getByRole("button", { name: /Add Ember to bag/ }).click();
-  await page.getByRole("button", { name: /Ravens/ }).click();
+  const villageRavensButton = page.getByRole("button", { name: /Ravens/ });
+  await expect(villageRavensButton.locator("svg")).toHaveAttribute("aria-hidden", "true");
+  await villageRavensButton.click();
 
   const dialog = page.getByRole("dialog", { name: "Raven Ledger — messages sent to Klaviyo" });
   await expect(dialog).toBeVisible();
   const entries = dialog.getByTestId("ledger-entry");
-  await expect(entries.filter({ hasText: "Viewed Product" })).toContainText("simulated");
-  await expect(entries.filter({ hasText: "Added to Cart" })).toContainText("simulated");
+  const viewedProductEntry = entries.filter({ hasText: "Viewed Product" });
+  const addedToCartEntry = entries.filter({ hasText: "Added to Cart" });
+  await expect(viewedProductEntry).toContainText("simulated");
+  await expect(viewedProductEntry).toContainText("Ember · $24.00");
+  await expect(viewedProductEntry).toContainText(/unique_id .{8}…/);
+  await expect(addedToCartEntry).toContainText("simulated");
+  await expect(addedToCartEntry).toContainText("Ember · $24.00");
   await expect(dialog).toContainText("t•••@example.com");
 
   await page.keyboard.press("Escape");
@@ -62,6 +71,8 @@ test("Oracle and bag actions appear in the Raven Ledger on village and store vie
   await page.keyboard.press("Escape");
 
   await page.goto("/shop");
-  await page.getByRole("button", { name: /Ravens/ }).click();
+  const storeRavensButton = page.getByRole("button", { name: /Ravens/ });
+  await expect(storeRavensButton.locator("svg")).toHaveAttribute("aria-hidden", "true");
+  await storeRavensButton.click();
   await expect(page.getByRole("dialog", { name: "Raven Ledger — messages sent to Klaviyo" })).toBeVisible();
 });

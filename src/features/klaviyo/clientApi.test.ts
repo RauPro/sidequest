@@ -45,6 +45,9 @@ describe("Klaviyo Client API", () => {
     const result = await send({ metric: "Viewed Product", properties: { ProductID: "ember" }, value: 24, uniqueId: "event-1" });
 
     expect(result.status).toBe("simulated");
+    expect(result.detail).toContain("unique_id event-1…");
+    expect(result.detail).toContain("ember · $24.00");
+    expect(result.detail).toContain("simulated, no request made");
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -58,12 +61,15 @@ describe("Klaviyo Client API", () => {
 
     const result = await send({
       metric: "Viewed Product",
-      properties: { ProductID: "ember" },
+      properties: { ProductName: "Ember", ProductID: "ember" },
       value: 24,
       uniqueId: "event-1",
     });
 
     expect(result.status).toBe("accepted");
+    expect(result.detail).toContain("unique_id event-1… · Ember · $24.00 · HTTP 202 accepted");
+    const { getLedgerSnapshot } = await import("./ledger");
+    expect(getLedgerSnapshot()[0].detail).toBe(result.detail);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, request] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("https://a.klaviyo.com/client/events?company_id=AbCdEf");
@@ -91,13 +97,26 @@ describe("Klaviyo Client API", () => {
               },
             },
           },
-          properties: { ProductID: "ember" },
+          properties: { ProductName: "Ember", ProductID: "ember" },
           unique_id: "event-1",
           value: 24,
           value_currency: "USD",
         },
       },
     });
+  });
+
+  it("reports non-202 HTTP responses as failed", async () => {
+    vi.stubEnv("NEXT_PUBLIC_SIDEQUEST_CLIENT_TRACKING", "live");
+    vi.stubEnv("NEXT_PUBLIC_KLAVIYO_SITE_ID", "AbCdEf");
+    mockWindow();
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(null, { status: 200 })));
+    const { sendClientEvent: send } = await freshApi();
+
+    const result = await send({ metric: "Viewed Product", properties: {}, uniqueId: "unexpected-200" });
+
+    expect(result.status).toBe("failed");
+    expect(result.detail).toContain("HTTP 200 failed");
   });
 
   it("omits value fields for custom events", async () => {
@@ -107,6 +126,20 @@ describe("Klaviyo Client API", () => {
     const body = buildClientEventBody({ metric: "Sidequest Demo Checkout Completed", properties: { is_demo: true }, uniqueId: "event-2" });
     expect(body.data.attributes).not.toHaveProperty("value");
     expect(body.data.attributes).not.toHaveProperty("value_currency");
+  });
+
+  it("summarizes the key property on custom events", async () => {
+    vi.stubEnv("NEXT_PUBLIC_SIDEQUEST_CLIENT_TRACKING", "demo");
+    mockWindow();
+    const { sendClientEvent: send } = await freshApi();
+
+    const result = await send({
+      metric: "Sidequest Letter Opened",
+      properties: { letter: "ember" },
+      uniqueId: "letter-1234",
+    });
+
+    expect(result.detail).toContain("unique_id letter-1… · letter: ember · simulated, no request made");
   });
 
   it("retries a 5xx once with the exact same encoded body and unique ID", async () => {
@@ -181,6 +214,7 @@ describe("Klaviyo Client API", () => {
     const result = await send({ metric: "Viewed Product", properties: {}, uniqueId: "rate-limited" });
 
     expect(result.status).toBe("failed");
+    expect(result.detail).toContain("HTTP 429 failed");
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 

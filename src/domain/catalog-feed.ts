@@ -1,5 +1,6 @@
 import { catalog, type ProductId } from "./catalog";
 import { isSoldOut } from "./inventory";
+import { productImagePath } from "./product-image";
 
 export const storefrontUrl = "https://sidequest.raul.engineer";
 
@@ -17,7 +18,7 @@ export function createCatalogFeed() {
       id: catalogFeedItemId(product.id),
       title: product.name,
       link: `${storefrontUrl}/products/${product.id}`,
-      image_link: `${storefrontUrl}/images/products/${product.id}.png`,
+      image_link: `${storefrontUrl}${productImagePath(product.id)}`,
       description: `${product.description} Fictional demo companion; no real purchase or shipment.`,
       price: product.priceMinor / 100,
       currency: product.currency,

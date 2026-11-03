@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { GET } from "@/app/catalog/klaviyo.json/route";
+import { buildViewedProduct } from "@/domain/klaviyoMetrics";
 
 afterEach(() => vi.unstubAllEnvs());
 
@@ -17,6 +18,7 @@ describe("public Klaviyo catalog contract", () => {
       expect(item.description).toContain("Fictional demo");
       expect(item.link).toBe(`https://sidequest.raul.engineer/products/${item.id}`);
       expect(item.image_link).toBe(`https://sidequest.raul.engineer/images/products/${item.id}.png`);
+      expect(buildViewedProduct(item.id, "market", "https://sidequest.raul.engineer").properties.ImageURL).toBe(item.image_link);
       expect(item.currency).toBe("USD");
       expect(item.inventory_policy).toBe(2);
       expect(item.inventory_quantity).toBe(100);

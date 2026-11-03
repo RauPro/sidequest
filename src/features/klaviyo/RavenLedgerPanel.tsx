@@ -68,7 +68,7 @@ export function RavenLedgerPanel({
           </button>
         </header>
         <p className="raven-ledger-explainer">
-          Demo mode entries are simulated. Live mode entries report whether Klaviyo accepted a request—never email delivery.
+          Demo entries are simulated. Live entries show HTTP acceptance or failure; accepted ≠ delivered.
         </p>
         {entries.length === 0 ? (
           <p className="raven-ledger-empty">No ravens yet. Events and messages from your journey will appear here.</p>

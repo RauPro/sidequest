@@ -305,7 +305,7 @@ export function EncounterHost({
         {state.location === "oracle" && state.nodeId === "oracle-save" && state.deskMood && (
           <OracleSaveForm mood={state.deskMood} onEmailSubmitted={onEmailSubmitted} identityEmail={identityEmail} onForgetIdentity={onForgetIdentity} />
         )}
-        {state.location === "post" && (
+        {state.location === "post" && state.nodeId === "post-start" && (
           <PostOfficeForm onEmailSubmitted={onEmailSubmitted} identityEmail={identityEmail} onForgetIdentity={onForgetIdentity} />
         )}
         {state.location === "camp" && (
