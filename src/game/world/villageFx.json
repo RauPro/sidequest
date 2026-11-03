@@ -24,9 +24,9 @@
     { "id": "camp-sign", "polygon": [[955, 640], [1062, 640], [1062, 728], [955, 728]] },
     { "id": "lantern-camp", "polygon": [[1248, 715], [1285, 715], [1285, 800], [1248, 800]] },
     { "id": "bushes-south-west", "mask": "foliage", "polygon": [[470, 760], [585, 770], [600, 880], [615, 1024], [448, 1024]] },
-    { "id": "bushes-south-east", "mask": "foliage", "polygon": [[655, 800], [720, 800], [740, 1024], [690, 1024]] },
+    { "id": "bushes-south-east", "mask": "foliage", "polygon": [[660, 905], [725, 905], [740, 1024], [690, 1024]] },
     { "id": "pines-camp-east", "mask": "foliage", "polygon": [[1270, 620], [1420, 620], [1420, 920], [1280, 920]] },
-    { "id": "pines-camp-south", "mask": "foliage", "polygon": [[960, 860], [1300, 880], [1300, 1024], [960, 1024]] }
+    { "id": "pines-camp-south", "mask": "foliage", "polygon": [[960, 885], [1300, 895], [1300, 1024], [960, 1024]] }
   ],
   "lights": [
     { "x": 179, "y": 267, "radius": 34, "color": "#ffc864", "kind": "lantern" },
