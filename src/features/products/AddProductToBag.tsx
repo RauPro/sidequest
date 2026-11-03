@@ -5,7 +5,7 @@ import { useState } from "react";
 import { maxQuantity } from "@/domain/cart";
 import { getProduct, type ProductId } from "@/domain/catalog";
 import { useCart } from "@/features/cart/CartProvider";
-import { trackBagUpdated } from "@/features/klaviyo/track";
+import { trackAddedToCart } from "@/features/klaviyo/track";
 import styles from "./product-page.module.css";
 
 export function AddProductToBag({ id }: { id: ProductId }) {
@@ -16,8 +16,9 @@ export function AddProductToBag({ id }: { id: ProductId }) {
 
   function add() {
     if (!product.available || (store.getSnapshot()[id] ?? 0) >= maxQuantity) return;
+    const previousCart = store.getSnapshot();
     store.add(id);
-    trackBagUpdated(store.getSnapshot());
+    trackAddedToCart(previousCart, store.getSnapshot(), id);
     setMessage(`${product.name} added to your bag.`);
   }
 

@@ -38,8 +38,8 @@ test("Oracle and bag actions appear in the Raven Ledger on village and store vie
   const dialog = page.getByRole("dialog", { name: "Raven Ledger — messages sent to Klaviyo" });
   await expect(dialog).toBeVisible();
   const entries = dialog.getByTestId("ledger-entry");
-  await expect(entries.filter({ hasText: "Sidequest Product Viewed" })).toContainText("simulated");
-  await expect(entries.filter({ hasText: "Sidequest Bag Updated" })).toContainText("simulated");
+  await expect(entries.filter({ hasText: "Viewed Product" })).toContainText("simulated");
+  await expect(entries.filter({ hasText: "Added to Cart" })).toContainText("simulated");
   await expect(dialog).toContainText("t•••@example.com");
 
   await page.keyboard.press("Escape");

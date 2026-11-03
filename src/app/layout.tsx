@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Pixelify_Sans } from "next/font/google";
+import { KlaviyoIdentityCapture } from "@/features/klaviyo/KlaviyoIdentityCapture";
 import "./globals.css";
 
 const pixelify = Pixelify_Sans({
@@ -15,5 +16,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  return <html lang="en"><body className={pixelify.variable}><a className="skip-link" href="#main">Skip to content</a>{children}</body></html>;
+  return <html lang="en"><body className={pixelify.variable}><KlaviyoIdentityCapture><a className="skip-link" href="#main">Skip to content</a>{children}</KlaviyoIdentityCapture></body></html>;
 }

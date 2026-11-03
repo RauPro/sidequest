@@ -16,7 +16,7 @@ import { getEncounterNode } from "./market";
 import { SidePanel } from "./SidePanel";
 import type { EncounterAction, EncounterContext, EncounterState } from "./types";
 import type { CampTopic } from "@/domain/campGuide";
-import { trackBagUpdated, trackDemoCheckout, trackEvent, trackEventOnce } from "@/features/klaviyo/track";
+import { trackAddedToCart, trackDemoCheckout, trackEvent, trackEventOnce, trackStartedCheckout } from "@/features/klaviyo/track";
 import { maskEmail } from "@/features/klaviyo/identity";
 import { recordLedger, updateLedger } from "@/features/klaviyo/ledger";
 
@@ -25,7 +25,6 @@ export function EncounterHost({
   onStateChange,
   onClose,
   opener,
-  onCartUpdated = () => undefined,
   onEmailSubmitted = () => undefined,
   identityEmail = null,
   onForgetIdentity = () => undefined,
@@ -35,7 +34,6 @@ export function EncounterHost({
   onStateChange: (state: EncounterState) => void;
   onClose: () => void;
   opener: HTMLElement | null;
-  onCartUpdated?: () => void;
   onEmailSubmitted?: (email: string) => void;
   identityEmail?: string | null;
   onForgetIdentity?: () => void;
@@ -186,18 +184,19 @@ export function EncounterHost({
       });
     }
     if (result.effect?.type === "add-to-bag") {
-      store.add(result.effect.productId ?? state.productId);
-      trackBagUpdated(store.getSnapshot());
-      onCartUpdated();
+      const productId = result.effect.productId ?? state.productId;
+      const previousCart = store.getSnapshot();
+      store.add(productId);
+      trackAddedToCart(previousCart, store.getSnapshot(), productId);
     }
     if (result.effect?.type === "checkout") {
       const snapshot = store.getSnapshot();
       if (cartCount(snapshot) === 0) return;
+      const checkoutId = crypto.randomUUID();
+      trackStartedCheckout(snapshot, checkoutId);
       const order = createDemoOrder(snapshot, crypto.randomUUID());
       trackDemoCheckout(order);
       store.clear();
-      trackBagUpdated(store.getSnapshot());
-      onCartUpdated();
       nextState = { ...nextState, receipt: order };
     }
     onStateChange(nextState);
@@ -319,7 +318,6 @@ export function EncounterHost({
         store={store}
         receipt={state.receipt}
         onAction={commitAction}
-        onCartUpdated={onCartUpdated}
       />
     </div>
   );

@@ -6,7 +6,7 @@ import { catalog, formatMoney } from "@/domain/catalog";
 import { maxQuantity } from "@/domain/cart";
 import { productCopy } from "@/features/products/product-copy";
 import { useCart } from "@/features/cart/CartProvider";
-import { trackBagUpdated, trackEventOnce } from "@/features/klaviyo/track";
+import { trackAddedToCart, trackEventOnce } from "@/features/klaviyo/track";
 
 export function ProductGrid() {
   const { cart, store } = useCart();
@@ -28,8 +28,9 @@ export function ProductGrid() {
             type="button"
             className="rpg-btn rpg-btn--primary"
             onClick={() => {
+              const previousCart = store.getSnapshot();
               store.add(product.id);
-              trackBagUpdated(store.getSnapshot());
+              trackAddedToCart(previousCart, store.getSnapshot(), product.id);
             }}
             disabled={!product.available || (cart[product.id] ?? 0) >= maxQuantity}
           >

@@ -1,13 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { cartLines, cartTotal, maxQuantity } from "@/domain/cart";
-import { formatMoney, getProduct, productIds } from "@/domain/catalog";
+import { cartLines, cartTotal, maxQuantity, type Cart } from "@/domain/cart";
+import { formatMoney, getProduct, productIds, type ProductId } from "@/domain/catalog";
 import { productCopy } from "@/features/products/product-copy";
 import type { CartStore } from "@/features/cart/store";
 import type { DemoOrder } from "@/domain/orders";
 import type { EncounterAction, SideView } from "./types";
-import { trackBagUpdated } from "@/features/klaviyo/track";
+import { trackAddedToCart } from "@/features/klaviyo/track";
 
 export function SidePanel({
   side,
@@ -15,7 +15,6 @@ export function SidePanel({
   store,
   receipt,
   onAction,
-  onCartUpdated,
   dialog = false,
 }: {
   side: SideView;
@@ -23,12 +22,10 @@ export function SidePanel({
   store: CartStore;
   receipt: DemoOrder | null;
   onAction: (action: EncounterAction) => void;
-  onCartUpdated: () => void;
   dialog?: boolean;
 }) {
-  function cartChanged() {
-    trackBagUpdated(store.getSnapshot());
-    onCartUpdated();
+  function cartChanged(previousCart: Cart, productId: ProductId) {
+    trackAddedToCart(previousCart, store.getSnapshot(), productId);
   }
 
   if (!side) return null;
@@ -72,10 +69,10 @@ export function SidePanel({
           <div className="bag-line" key={product.id}>
             <div className="bag-line-name">{product.name}<span>{formatMoney(product.priceMinor)} each</span></div>
             <div className="bag-line-actions">
-              <button type="button" className="rpg-btn" aria-label={`Remove one ${product.name}`} onClick={() => { store.set(product.id, quantity - 1); cartChanged(); }}>−</button>
+              <button type="button" className="rpg-btn" aria-label={`Remove one ${product.name}`} onClick={() => store.set(product.id, quantity - 1)}>−</button>
               <span aria-label={`${product.name} quantity`}>{quantity}</span>
-              <button type="button" className="rpg-btn" aria-label={`Add one ${product.name}`} disabled={quantity >= maxQuantity} onClick={() => { store.add(product.id); cartChanged(); }}>+</button>
-              <button type="button" className="rpg-btn" onClick={() => { store.set(product.id, 0); cartChanged(); }}>Remove {product.name}</button>
+              <button type="button" className="rpg-btn" aria-label={`Add one ${product.name}`} disabled={quantity >= maxQuantity} onClick={() => { const previousCart = store.getSnapshot(); store.add(product.id); cartChanged(previousCart, product.id); }}>+</button>
+              <button type="button" className="rpg-btn" onClick={() => store.set(product.id, 0)}>Remove {product.name}</button>
             </div>
             <strong>{formatMoney(totalMinor)}</strong>
           </div>

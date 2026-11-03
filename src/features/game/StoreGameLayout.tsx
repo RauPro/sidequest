@@ -7,7 +7,7 @@ import { useCart } from "@/features/cart/CartProvider";
 import { SidePanel } from "@/features/encounters/SidePanel";
 import type { GameHudView } from "./GameHud";
 import { GameHud } from "./GameHud";
-import { trackBagUpdated, trackDemoCheckout } from "@/features/klaviyo/track";
+import { trackDemoCheckout, trackStartedCheckout } from "@/features/klaviyo/track";
 import { RavenLedgerPanel } from "@/features/klaviyo/RavenLedgerPanel";
 
 export function StoreGameLayout({
@@ -45,11 +45,12 @@ export function StoreGameLayout({
     if (action.type === "checkout") {
       const snapshot = store.getSnapshot();
       if (!cartCount(snapshot)) return;
+      const checkoutId = crypto.randomUUID();
+      trackStartedCheckout(snapshot, checkoutId);
       const order = createDemoOrder(snapshot, crypto.randomUUID());
       trackDemoCheckout(order);
       setReceipt(order);
       store.clear();
-      trackBagUpdated(store.getSnapshot());
     }
   }
   const openLedger = (button: HTMLElement | null) => {
@@ -87,7 +88,6 @@ export function StoreGameLayout({
             store={store}
             receipt={receipt}
             onAction={(action) => handleAction(action)}
-            onCartUpdated={() => trackBagUpdated(store.getSnapshot())}
             dialog
           />
         </div>
