@@ -17,7 +17,7 @@ function seededRng(seed: number) {
 function runTrajectory(seed: number) {
   const rng = seededRng(seed);
   const npcStates = npcs.map((definition) => createNpcState(definition, rng));
-  const duck = createDuckState(rng);
+  const duckStates = ducks.spawns.map((spawn) => createDuckState(rng, spawn));
   const areaTileKeys = npcStates.map((state) =>
     state.kind === "wander"
       ? new Set(npcAreaTiles(state.definition.areas).map(({ col, row }) => `${col},${row}`))
@@ -38,13 +38,14 @@ function runTrajectory(seed: number) {
         expect(state.x).toBeLessThanOrEqual(state.definition.range[1]);
       }
     }
-    stepDuck(duck, 16, rng);
-    expect(containsPoint(duck.x, duck.y, ducks.area)).toBe(true);
+    for (const duck of duckStates) {
+      stepDuck(duck, 16, rng);
+      expect(containsPoint(duck.x, duck.y, ducks.area)).toBe(true);
+    }
     if (index % 375 === 0) {
       trajectory.push(
         ...npcStates.flatMap((state) => [state.x, state.y]),
-        duck.x,
-        duck.y,
+        ...duckStates.flatMap((duck) => [duck.x, duck.y]),
       );
     }
   }

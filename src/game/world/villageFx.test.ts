@@ -1,9 +1,10 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { containsPoint, TILE_SIZE, tileAt } from "./villageMap";
-import { blockedAreas, walkAreas } from "./walkAreas";
+import { walkAreas } from "./walkAreas";
 import {
   ducks,
+  FX_FRAMES,
   FX_HEIGHT,
   FX_WIDTH,
   fxBounds,
@@ -30,8 +31,14 @@ describe("village FX data", () => {
     ] as const) {
       for (const region of regions) {
         const bounds = fxBounds(region.polygon);
+        const xs = region.polygon.map(([x]) => x);
+        const ys = region.polygon.map(([, y]) => y);
         expect(bounds.width, `${prefix}-${region.id} width`).toBeGreaterThan(0);
         expect(bounds.height, `${prefix}-${region.id} height`).toBeGreaterThan(0);
+        expect(Math.min(...xs)).toBeGreaterThanOrEqual(0);
+        expect(Math.max(...xs)).toBeLessThanOrEqual(FX_WIDTH);
+        expect(Math.min(...ys)).toBeGreaterThanOrEqual(0);
+        expect(Math.max(...ys)).toBeLessThanOrEqual(FX_HEIGHT);
         expect(bounds.x).toBeGreaterThanOrEqual(0);
         expect(bounds.y).toBeGreaterThanOrEqual(0);
         expect(bounds.x + bounds.width).toBeLessThanOrEqual(FX_WIDTH);
@@ -41,17 +48,18 @@ describe("village FX data", () => {
   });
 
   it("keeps FX strip and occluder PNG dimensions aligned with computed bounds", () => {
+    expect(FX_FRAMES).toBe(8);
     for (const region of water) {
       const bounds = fxBounds(region.polygon);
       expect(pngDimensions(`public/game/fx/water-${region.id}.png`)).toEqual({
-        width: bounds.width * 8,
+        width: bounds.width * FX_FRAMES,
         height: bounds.height,
       });
     }
     for (const region of sway) {
       const bounds = fxBounds(region.polygon);
       expect(pngDimensions(`public/game/fx/sway-${region.id}.png`)).toEqual({
-        width: bounds.width * 8,
+        width: bounds.width * FX_FRAMES,
         height: bounds.height,
       });
     }
@@ -87,6 +95,5 @@ describe("village FX data", () => {
       expect(light.y).toBeGreaterThanOrEqual(0);
       expect(light.y).toBeLessThanOrEqual(FX_HEIGHT);
     }
-    expect(Object.keys(blockedAreas).length).toBeGreaterThan(0);
   });
 });

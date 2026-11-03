@@ -1,4 +1,4 @@
-import { containsPoint, MAP_COLS, MAP_ROWS, TILE_SIZE, tileAt, type TilePoint, type WorldPoint } from "../world/villageMap";
+import { containsPoint, MAP_COLS, MAP_ROWS, TILE_SIZE, type TilePoint, type WorldPoint } from "../world/villageMap";
 import { ducks, type NpcDefinition } from "../world/villageFx";
 import { walkAreas } from "../world/walkAreas";
 import { findPath, tileWalkable } from "./pathfinding";
@@ -265,8 +265,11 @@ function randomDuckTarget(state: DuckState, rng: RandomSource): WorldPoint {
   return { x: state.x, y: state.y };
 }
 
-export function createDuckState(rng: RandomSource): DuckState {
-  const [x, y] = ducks.spawns[0];
+export function createDuckState(
+  rng: RandomSource,
+  spawn: readonly [number, number] = ducks.spawns[0],
+): DuckState {
+  const [x, y] = spawn;
   return {
     x,
     y,
@@ -304,9 +307,4 @@ export function stepDuck(state: DuckState, dtMs: number, rng: RandomSource): Duc
 
 export function npcTile(state: NpcState): TilePoint {
   return tileFor(state.x, state.y);
-}
-
-export function npcTileIsWalkable(state: NpcState): boolean {
-  const tile = npcTile(state);
-  return tileAt(tile.col, tile.row) === "walkable";
 }
