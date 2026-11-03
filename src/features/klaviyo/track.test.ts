@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createDemoOrder } from "@/domain/orders";
-import { trackDemoCheckout, trackEvent } from "./track";
+import { forgetEmail } from "./identity";
+import { trackDemoCheckout, trackEvent, trackEventOnce } from "./track";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -38,6 +39,45 @@ describe("semantic Klaviyo tracking", () => {
     const body = JSON.parse(fetchMock.mock.calls[0][1].body as string);
     expect(body.data.attributes.profile.data.attributes.email).toBeUndefined();
     expect(body.data.attributes.profile.data.attributes.anonymous_id).toBeTruthy();
+  });
+
+  it("scopes once-only events to the anonymous identity", () => {
+    vi.stubEnv("NEXT_PUBLIC_SIDEQUEST_CLIENT_TRACKING", "live");
+    vi.stubEnv("NEXT_PUBLIC_KLAVIYO_SITE_ID", "AbCdEf");
+    const localValues = new Map<string, string>();
+    const sessionValues = new Map<string, string>();
+    vi.stubGlobal("window", {
+      localStorage: {
+        getItem: (key: string) => localValues.get(key) ?? null,
+        setItem: (key: string, value: string) => localValues.set(key, value),
+        removeItem: (key: string) => localValues.delete(key),
+      },
+      sessionStorage: {
+        getItem: (key: string) => sessionValues.get(key) ?? null,
+        setItem: (key: string, value: string) => sessionValues.set(key, value),
+      },
+      location: { href: "https://sidequest.test/" },
+      history: { state: null, replaceState: vi.fn() },
+      dispatchEvent: vi.fn(),
+    });
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 202 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    forgetEmail();
+    trackEventOnce("location:market", "Sidequest Location Visited", { location: "market" });
+    trackEventOnce("location:market", "Sidequest Location Visited", { location: "market" });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const firstPayload = JSON.parse(fetchMock.mock.calls[0][1].body as string);
+    const firstAnonymousId = firstPayload.data.attributes.profile.data.attributes.anonymous_id as string;
+    expect(firstAnonymousId).toBeTruthy();
+
+    forgetEmail();
+    trackEventOnce("location:market", "Sidequest Location Visited", { location: "market" });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const secondPayload = JSON.parse(fetchMock.mock.calls[1][1].body as string);
+    expect(secondPayload.data.attributes.profile.data.attributes.anonymous_id).not.toBe(firstAnonymousId);
   });
 
   it("marks demo checkout completion without emitting purchase value", async () => {

@@ -46,7 +46,7 @@ export function captureKlaviyoIdentity() {
   }
 }
 
-function getAnonymousId(): string {
+export function getAnonymousId(): string {
   if (memoryAnonymousId) return memoryAnonymousId;
   const id = (() => {
     try {

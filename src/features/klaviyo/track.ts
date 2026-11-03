@@ -5,6 +5,7 @@ import type { DemoOrder } from "@/domain/orders";
 import type { DeskMood, VisualStyle } from "@/domain/recommendations";
 import type { LocationId } from "@/game/world/locations";
 import type { LetterId } from "@/domain/letters";
+import { getAnonymousId } from "./identity";
 import { sendClientEvent } from "./clientApi";
 
 export type TrackProperties = {
@@ -52,13 +53,14 @@ export function trackEventOnce<E extends keyof TrackProperties>(
   event: E,
   properties: TrackProperties[E],
 ) {
+  const scopedKey = `${getAnonymousId()}:${key}`;
   try {
-    if (window.sessionStorage.getItem(trackedKey)?.split("|").includes(key)) return;
+    if (window.sessionStorage.getItem(trackedKey)?.split("|").includes(scopedKey)) return;
     const current = window.sessionStorage.getItem(trackedKey)?.split("|").filter(Boolean) ?? [];
-    window.sessionStorage.setItem(trackedKey, [...new Set([...current, key])].join("|"));
+    window.sessionStorage.setItem(trackedKey, [...new Set([...current, scopedKey])].join("|"));
   } catch {
-    if (tracked.has(key)) return;
-    tracked.add(key);
+    if (tracked.has(scopedKey)) return;
+    tracked.add(scopedKey);
   }
   trackEvent(event, properties);
 }
