@@ -5,9 +5,10 @@ import { notFound } from "next/navigation";
 import { catalog, formatMoney, getProduct, isProductId } from "@/domain/catalog";
 import { AddProductToBag } from "@/features/products/AddProductToBag";
 import { productCopy } from "@/features/products/product-copy";
+import { ProductViewTracker } from "@/features/klaviyo/ProductViewTracker";
 import styles from "@/features/products/product-page.module.css";
 
-type ProductPageProps = { params: Promise<{ slug: string }> };
+type ProductPageProps = { params: Promise<{ slug: string }>; searchParams: Promise<{ source?: string }> };
 
 export function generateStaticParams() {
   return catalog.map(({ id }) => ({ slug: id }));
@@ -24,14 +25,16 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   };
 }
 
-export default async function ProductPage({ params }: ProductPageProps) {
+export default async function ProductPage({ params, searchParams }: ProductPageProps) {
   const { slug } = await params;
+  const { source = "shop" } = await searchParams;
   if (!isProductId(slug)) notFound();
   const product = getProduct(slug);
   const copy = productCopy[slug];
 
   return (
     <article className={styles.page}>
+      <ProductViewTracker productId={product.id} source={source} />
       <nav className={styles.navigation} aria-label="Product navigation">
         <Link href="/shop" className="rpg-btn">← Back to Market Hall</Link>
         <Link href="/?visit=market" className="rpg-btn">Find in the village</Link>
@@ -60,7 +63,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <h2>Meet the other companions</h2>
         <nav aria-label="Other companions">
           {catalog.filter(({ id }) => id !== product.id).map((other) => (
-            <Link key={other.id} href={`/products/${other.id}`}>
+            <Link key={other.id} href={`/products/${other.id}?source=${source}`}>
               <span className={styles.dot} style={{ backgroundColor: other.color }} aria-hidden="true" />
               Meet {other.name} →
             </Link>

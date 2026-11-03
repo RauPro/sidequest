@@ -1,6 +1,8 @@
 import type { ProductId } from "@/domain/catalog";
 import type { DemoOrder } from "@/domain/orders";
 import type { DeskMood, VisualStyle } from "@/domain/recommendations";
+import type { CampReply } from "@/domain/campGuide";
+import type { CampTopic } from "@/domain/campGuide";
 import type { LocationId } from "@/game/world/locations";
 
 export type NpcId = "milo" | "oracle" | "finn" | "pip" | "bag";
@@ -26,6 +28,11 @@ export type EncounterAction =
   | { type: "save-oracle" }
   | { type: "oracle-back" }
   | { type: "oracle-reset" }
+  | { type: "camp-custom" }
+  | { type: "camp-reset" }
+  | { type: "camp-email-skip" }
+  | { type: "send-chat"; content: string; topic: CampTopic }
+  | { type: "subscribe" }
   | { type: "goto-location"; location: LocationId };
 
 export type Choice = {
@@ -60,6 +67,7 @@ export type EncounterState = {
   visualStyle: VisualStyle | null;
   recommendedProductId: ProductId | null;
   alternateProductId: ProductId | null;
+  campReply: CampReply | null;
 };
 
 export type EncounterTransition = {

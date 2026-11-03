@@ -6,6 +6,7 @@ import { catalog, formatMoney } from "@/domain/catalog";
 import { maxQuantity } from "@/domain/cart";
 import { productCopy } from "@/features/products/product-copy";
 import { useCart } from "@/features/cart/CartProvider";
+import { trackBagUpdated, trackEventOnce } from "@/features/klaviyo/track";
 
 export function ProductGrid() {
   const { cart, store } = useCart();
@@ -26,12 +27,15 @@ export function ProductGrid() {
           <button
             type="button"
             className="rpg-btn rpg-btn--primary"
-            onClick={() => store.add(product.id)}
+            onClick={() => {
+              store.add(product.id);
+              trackBagUpdated(store.getSnapshot());
+            }}
             disabled={!product.available || (cart[product.id] ?? 0) >= maxQuantity}
           >
             Add to bag
           </button>
-          <Link className="rpg-btn shop-details-link" href={`/products/${product.id}`}>Details</Link>
+          <Link className="rpg-btn shop-details-link" href={`/products/${product.id}?source=shop`} onClick={() => trackEventOnce(`product:shop:${product.id}`, "Sidequest Product Viewed", { productId: product.id, discoverySource: "shop" })}>Details</Link>
         </article>
       ))}
     </div>

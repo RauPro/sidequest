@@ -57,3 +57,24 @@ describe("Oracle encounter", () => {
     expect(getEncounterNode(state, context)?.text).toContain("You seek a bold desk");
   });
 });
+
+describe("Camp and Post Office encounters", () => {
+  it("offers Camp quick replies and the optional pre-turn email step", () => {
+    let state = createEncounterState("camp");
+    let node = getEncounterNode(state, context)!;
+    expect(node.text).toBe("Pull up a log, traveler! Ask me anything about the companions, checkout, or the village.");
+    state = chooseEncounterOption(state, node, "checkout").state;
+    expect(state.nodeId).toBe("camp-start");
+    state = { ...state, nodeId: "camp-email" };
+    node = getEncounterNode(state, context)!;
+    expect(node.text).toBe("Share your email so the guide can follow up (optional).");
+    expect(node.choices.map(({ label }) => label)).toEqual(["Skip"]);
+  });
+
+  it("renders the exact Post Office greeting and Not now action", () => {
+    const node = getEncounterNode(createEncounterState("post"), context)!;
+    expect(node.text).toBe("Mrrp! Fancy letters from Willow Market? New companions and village news, now and then.");
+    expect(node.input).toBe("email+consent");
+    expect(node.choices.map(({ label }) => label)).toEqual(["Not now"]);
+  });
+});

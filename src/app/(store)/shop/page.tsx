@@ -17,11 +17,22 @@ export default function ShopPage() {
         </div>
       </header>
       <ProductGrid />
-      <section className="village-services rpg-frame" aria-labelledby="village-services-title">
+      <section className="village-services" aria-labelledby="village-services-title">
         <h2 id="village-services-title">Village services</h2>
-        <Link href="/?visit=oracle">Visit the Oracle</Link>
-        <Link href="/?visit=camp">Visit Camp</Link>
-        <Link href="/?visit=post">Visit the Post Office</Link>
+        <div className="village-service-tiles">
+          <Link className="village-service-tile rpg-frame" href="/?visit=oracle">
+            <Image src="/game/portraits/oracle.webp" alt="" width={72} height={72} className="game-image" aria-hidden="true" />
+            <span><strong>The Oracle</strong><small>Seek a companion by the stars</small></span>
+          </Link>
+          <Link className="village-service-tile rpg-frame" href="/?visit=camp">
+            <Image src="/game/portraits/finn.webp" alt="" width={72} height={72} className="game-image" aria-hidden="true" />
+            <span><strong>Camp</strong><small>Ask Finn about the village</small></span>
+          </Link>
+          <Link className="village-service-tile rpg-frame" href="/?visit=post">
+            <Image src="/game/portraits/pip.webp" alt="" width={72} height={72} className="game-image" aria-hidden="true" />
+            <span><strong>Post Office</strong><small>Letters from Willow Market</small></span>
+          </Link>
+        </div>
       </section>
     </div>
   );

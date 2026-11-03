@@ -14,6 +14,8 @@ import type { EncounterState } from "@/features/encounters/types";
 import { GameHud } from "./GameHud";
 import { QuestCard } from "./QuestCard";
 import { readOracleReading } from "@/features/oracle/reading";
+import { useIdentity } from "@/features/klaviyo/useIdentity";
+import { trackEventOnce } from "@/features/klaviyo/track";
 import {
   updateQuestProgress,
   useQuestProgress,
@@ -55,6 +57,7 @@ export function GameShell() {
   const deepLinkHandled = useRef(false);
   const quest = useQuestProgress();
   const { cart } = useCart();
+  const identity = useIdentity();
 
   useEffect(() => bridge.subscribe((e) => {
     if (e.type === "ready") {
@@ -67,7 +70,15 @@ export function GameShell() {
           const target = visit === "bag" ? "bag" : locations.find((location) => location.id === visit)?.id;
           if (target) {
             setOpener(document.querySelector("[data-game-stage]"));
-            setEncounter(newEncounter(target));
+            const opened = newEncounter(target);
+            setEncounter(opened);
+            if (target !== "bag") trackEventOnce(`location:${target}`, "Sidequest Location Visited", { location: target });
+            if (opened.location === "oracle" && opened.nodeId === "oracle-reveal") {
+              trackEventOnce(`product:oracle:${opened.productId}`, "Sidequest Product Viewed", {
+                productId: opened.productId,
+                discoverySource: "oracle",
+              });
+            }
             if (target === "market") updateQuestProgress((current) => ({ ...current, market: true }));
           }
           window.history.replaceState(window.history.state, "", `${window.location.pathname}${window.location.hash}`);
@@ -77,7 +88,15 @@ export function GameShell() {
     if (e.type === "open") {
       setHintOverride(null);
       setOpener(document.querySelector("[data-game-stage]"));
-      setEncounter(newEncounter(e.id));
+      const opened = newEncounter(e.id);
+      setEncounter(opened);
+      trackEventOnce(`location:${e.id}`, "Sidequest Location Visited", { location: e.id });
+      if (opened.location === "oracle" && opened.nodeId === "oracle-reveal") {
+        trackEventOnce(`product:oracle:${opened.productId}`, "Sidequest Product Viewed", {
+          productId: opened.productId,
+          discoverySource: "oracle",
+        });
+      }
       if (e.id === "market") updateQuestProgress((current) => ({ ...current, market: true }));
     }
     if (e.type === "open-bag") {
@@ -101,8 +120,16 @@ export function GameShell() {
   const openEncounter = (id: LocationId | "bag") => (e?: SyntheticEvent) => {
     if (e) setOpener(e.currentTarget as HTMLElement);
     else setOpener(document.querySelector("[data-game-stage]"));
+    if (id !== "bag") trackEventOnce(`location:${id}`, "Sidequest Location Visited", { location: id });
     if (id === "market") updateQuestProgress((current) => ({ ...current, market: true }));
-    setEncounter(newEncounter(id));
+    const opened = newEncounter(id);
+    setEncounter(opened);
+    if (opened.location === "oracle" && opened.nodeId === "oracle-reveal") {
+      trackEventOnce(`product:oracle:${opened.productId}`, "Sidequest Product Viewed", {
+        productId: opened.productId,
+        discoverySource: "oracle",
+      });
+    }
   };
   const nearLoc = locations.find((l) => l.id === nearby);
   const hoverLoc = locations.find((l) => l.id === hover);
@@ -148,6 +175,6 @@ export function GameShell() {
       <span className="controls-keyboard"><kbd>WASD/↑↓←→</kbd> Move <kbd>E</kbd> Interact <kbd>B</kbd> Bag <kbd>Esc</kbd> Close</span>
       <span className="controls-touch">Tap a path to move · Tap a place to visit</span>
     </aside>
-    {panel && <EncounterHost state={encounter} onStateChange={setEncounter} onClose={() => setEncounter(emptyEncounter)} opener={opener} onGotoLocation={pointToLocation} />}
+    {panel && <EncounterHost state={encounter} onStateChange={setEncounter} onClose={() => setEncounter(emptyEncounter)} opener={opener} onGotoLocation={pointToLocation} identityEmail={identity.email} onEmailSubmitted={identity.remember} onForgetIdentity={identity.forget} />}
   </main>;
 }

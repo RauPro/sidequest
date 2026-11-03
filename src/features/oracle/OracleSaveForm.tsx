@@ -2,13 +2,18 @@
 
 import { useRef, useState, type FormEvent } from "react";
 import type { DeskMood } from "@/domain/recommendations";
+import { maskEmail } from "@/features/klaviyo/identity";
 
 export function OracleSaveForm({
   mood,
   onEmailSubmitted,
+  identityEmail,
+  onForgetIdentity,
 }: {
   mood: DeskMood;
   onEmailSubmitted: (email: string) => void;
+  identityEmail: string | null;
+  onForgetIdentity: () => void;
 }) {
   const [status, setStatus] = useState("");
   const pending = useRef(false);
@@ -17,16 +22,16 @@ export function OracleSaveForm({
     event.preventDefault();
     if (pending.current) return;
     const form = event.currentTarget;
-    const email = new FormData(form).get("email");
-    if (typeof email !== "string") return;
+    const submittedEmail = new FormData(form).get("email");
+    if (typeof submittedEmail !== "string") return;
     pending.current = true;
     setStatus("");
-    onEmailSubmitted(email);
+    onEmailSubmitted(submittedEmail);
     try {
       const response = await fetch("/api/oracle/preferences", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, mood }),
+        body: JSON.stringify({ email: submittedEmail, mood }),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.message ?? "The Oracle could not save this reading.");
@@ -46,8 +51,13 @@ export function OracleSaveForm({
 
   return (
     <form className="oracle-save-form" onSubmit={submit}>
+      {identityEmail && (
+        <p className="remembered-identity">
+          Remembered as {maskEmail(identityEmail)} · <button type="button" onClick={onForgetIdentity}>Forget</button>
+        </p>
+      )}
       <label htmlFor="oracle-reading-email">Your email address</label>
-      <input id="oracle-reading-email" name="email" type="email" autoComplete="email" maxLength={254} required aria-describedby="oracle-reading-status" />
+      <input key={identityEmail ?? "anonymous"} id="oracle-reading-email" name="email" type="email" autoComplete="email" maxLength={254} required aria-describedby="oracle-reading-status" defaultValue={identityEmail ?? ""} />
       <button type="submit" className="rpg-btn rpg-btn--primary">Save reading</button>
       <p id="oracle-reading-status" role="status" aria-live="polite">{status}</p>
     </form>

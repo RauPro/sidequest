@@ -19,13 +19,14 @@ export const emptyEncounter: EncounterState = Object.freeze({
   visualStyle: null,
   recommendedProductId: null,
   alternateProductId: null,
+  campReply: null,
 });
 
 const startNodes = {
   market: "market-start",
   oracle: "oracle-start",
-  camp: "legacy-camp",
-  post: "legacy-post",
+  camp: "camp-start",
+  post: "post-start",
   bag: "bag",
 } as const;
 
@@ -90,6 +91,16 @@ export function applyEncounterAction(
       return { state: { ...state, nodeId: "oracle-reveal" } };
     case "oracle-reset":
       return { state: createEncounterState("oracle") };
+    case "camp-custom":
+      return { state: { ...state, nodeId: "camp-custom" } };
+    case "camp-reset":
+      return { state: { ...createEncounterState("camp"), campReply: null } };
+    case "camp-email-skip":
+      return { state: { ...state, nodeId: "camp-start" } };
+    case "send-chat":
+      return { state };
+    case "subscribe":
+      return { state };
     case "goto-location":
       return { state: createEncounterState(action.location) };
   }

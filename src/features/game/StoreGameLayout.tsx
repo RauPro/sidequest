@@ -7,6 +7,7 @@ import { useCart } from "@/features/cart/CartProvider";
 import { SidePanel } from "@/features/encounters/SidePanel";
 import type { GameHudView } from "./GameHud";
 import { GameHud } from "./GameHud";
+import { trackBagUpdated, trackDemoCheckout } from "@/features/klaviyo/track";
 
 export function StoreGameLayout({
   children,
@@ -41,8 +42,11 @@ export function StoreGameLayout({
     if (action.type === "checkout") {
       const snapshot = store.getSnapshot();
       if (!cartCount(snapshot)) return;
-      setReceipt(createDemoOrder(snapshot, crypto.randomUUID()));
+      const order = createDemoOrder(snapshot, crypto.randomUUID());
+      trackDemoCheckout(order);
+      setReceipt(order);
       store.clear();
+      trackBagUpdated(store.getSnapshot());
     }
   }
 
@@ -72,7 +76,7 @@ export function StoreGameLayout({
             store={store}
             receipt={receipt}
             onAction={(action) => handleAction(action)}
-            onCartUpdated={() => undefined}
+            onCartUpdated={() => trackBagUpdated(store.getSnapshot())}
             dialog
           />
         </div>

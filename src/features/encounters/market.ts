@@ -1,6 +1,8 @@
 import { getProduct } from "@/domain/catalog";
 import type { EncounterContext, EncounterState, Node, ResolvedNode, SideView } from "./types";
 import { getOracleNode } from "./oracle";
+import { getCampNode } from "./camp";
+import { postOfficeNode } from "./post";
 
 const start: Node = {
   speaker: "milo",
@@ -98,6 +100,17 @@ export function getEncounterNode(
       ? { ...node.side, productId: state.productId }
       : node.side ?? null;
     return { ...node, text: typeof node.text === "function" ? node.text(context) : node.text, side };
+  }
+  if (state.location === "camp") {
+    const node = getCampNode(state);
+    if (!node) return null;
+    const side = node.side?.kind === "product"
+      ? { ...node.side, productId: state.campReply?.kind === "product" ? state.campReply.productId ?? node.side.productId : node.side.productId }
+      : node.side ?? null;
+    return { ...node, text: typeof node.text === "function" ? node.text(context) : node.text, side };
+  }
+  if (state.location === "post") {
+    return { ...postOfficeNode, text: postOfficeNode.text as string, side: null };
   }
   const node = marketNodes[state.nodeId];
   if (!node) return null;

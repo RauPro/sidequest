@@ -6,12 +6,13 @@ import { formatMoney, getProduct, productIds } from "@/domain/catalog";
 import type { CartStore } from "@/features/cart/store";
 import type { DemoOrder } from "@/domain/orders";
 import type { EncounterAction, SideView } from "./types";
+import { trackBagUpdated } from "@/features/klaviyo/track";
 
-const companionTraits = {
+  const companionTraits = {
   ember: { subtitle: "Brave desk companion", traits: ["Brave", "Warm", "Fire"] },
   moss: { subtitle: "Gentle desk companion", traits: ["Calm", "Soft", "Nature"] },
   bolt: { subtitle: "Curious desk companion", traits: ["Curious", "Clever", "Technology"] },
-} as const;
+  } as const;
 
 export function SidePanel({
   side,
@@ -30,6 +31,11 @@ export function SidePanel({
   onCartUpdated: () => void;
   dialog?: boolean;
 }) {
+  function cartChanged() {
+    trackBagUpdated(store.getSnapshot());
+    onCartUpdated();
+  }
+
   if (!side) return null;
   if (side.kind === "product") {
     const product = getProduct(side.productId);
@@ -71,10 +77,10 @@ export function SidePanel({
           <div className="bag-line" key={product.id}>
             <div className="bag-line-name">{product.name}<span>{formatMoney(product.priceMinor)} each</span></div>
             <div className="bag-line-actions">
-              <button type="button" className="rpg-btn" aria-label={`Remove one ${product.name}`} onClick={() => { store.set(product.id, quantity - 1); onCartUpdated(); }}>−</button>
+              <button type="button" className="rpg-btn" aria-label={`Remove one ${product.name}`} onClick={() => { store.set(product.id, quantity - 1); cartChanged(); }}>−</button>
               <span aria-label={`${product.name} quantity`}>{quantity}</span>
-              <button type="button" className="rpg-btn" aria-label={`Add one ${product.name}`} disabled={quantity >= maxQuantity} onClick={() => { store.add(product.id); onCartUpdated(); }}>+</button>
-              <button type="button" className="rpg-btn" onClick={() => { store.set(product.id, 0); onCartUpdated(); }}>Remove {product.name}</button>
+              <button type="button" className="rpg-btn" aria-label={`Add one ${product.name}`} disabled={quantity >= maxQuantity} onClick={() => { store.add(product.id); cartChanged(); }}>+</button>
+              <button type="button" className="rpg-btn" onClick={() => { store.set(product.id, 0); cartChanged(); }}>Remove {product.name}</button>
             </div>
             <strong>{formatMoney(totalMinor)}</strong>
           </div>
