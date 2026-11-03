@@ -7,6 +7,8 @@ import { productCopy } from "@/features/products/product-copy";
 import type { CartStore } from "@/features/cart/store";
 import type { DemoOrder } from "@/domain/orders";
 import type { EncounterAction, SideView } from "./types";
+import { isSoldOut } from "@/domain/inventory";
+import { BackInStockForm } from "@/features/klaviyo/BackInStockForm";
 import { trackAddedToCart } from "@/features/klaviyo/track";
 
 export function SidePanel({
@@ -32,10 +34,12 @@ export function SidePanel({
   if (side.kind === "product") {
     const product = getProduct(side.productId);
     const copy = productCopy[product.id];
+    const soldOut = isSoldOut(product.id);
     return (
       <aside className="rpg-frame side-panel product-side-panel" aria-label={`${product.name} details`}>
         <p className="side-panel-eyebrow">COMPANION</p>
         <h2>{product.name}</h2>
+        {soldOut && <p className="sold-out-pill" role="status">Sold out</p>}
         <p className="product-subtitle">{copy.subtitle}</p>
         <div className="product-art-glow" style={{ background: `radial-gradient(circle, ${product.color}88 0%, transparent 70%)` }}>
           <Image src={`/game/products/${product.id}.png`} alt={`${product.name} companion`} width={160} height={160} className="game-image" />
@@ -43,9 +47,10 @@ export function SidePanel({
         <ul className="product-traits">{copy.traits.map((trait) => <li key={trait}>{trait}</li>)}</ul>
         <p className="product-description">{copy.description}</p>
         <p className="product-price">{formatMoney(product.priceMinor)}</p>
-        <button type="button" className="rpg-btn rpg-btn--primary" onClick={() => onAction({ type: "add-to-bag", productId: product.id })}>
-          Add to bag
+        <button type="button" className="rpg-btn rpg-btn--primary" disabled={!product.available || soldOut} onClick={() => onAction({ type: "add-to-bag", productId: product.id })}>
+          {soldOut ? "Sold out" : "Add to bag"}
         </button>
+        {soldOut && <BackInStockForm productId={product.id} productName={product.name} />}
         {side.browsing && (
           <div className="product-carousel">
             <button type="button" className="rpg-btn" aria-label="Previous companion" onClick={() => onAction({ type: "browse-prev" })}>◀</button>

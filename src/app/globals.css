@@ -177,6 +177,15 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
 .oracle-save-form input:focus-visible { outline: 3px solid var(--bolt); outline-offset: 2px; }
 .oracle-save-form button { justify-self: start; }
 .oracle-save-form [role="status"] { min-height: 1.4em; margin: 2px 0; color: var(--moss); }
+.sold-out-pill { display: inline-flex; width: fit-content; margin: 6px 0; padding: 3px 8px; border: 1px solid var(--gold-dim); background: rgb(20 29 49 / 97%); color: var(--gold); font-size: 13px; }
+.back-in-stock-form { display: grid; gap: 8px; margin: 10px 0; padding: 10px; }
+.back-in-stock-form h3 { margin: 0; color: var(--gold); font-size: 15px; line-height: 1.35; }
+.back-in-stock-form p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.4; }
+.back-in-stock-form label { color: var(--gold); font-size: 13px; }
+.back-in-stock-form input { min-height: 42px; padding: 7px 9px; border: 2px solid var(--gold-dim); background: rgb(20 29 49 / 97%); color: var(--text); font: inherit; }
+.back-in-stock-form input:focus-visible { outline: 3px solid var(--bolt); outline-offset: 2px; }
+.back-in-stock-form button { justify-self: start; }
+.back-in-stock-form [role="status"] { min-height: 1.4em; color: var(--moss); }
 .remembered-identity { margin: 0; color: var(--parchment-dim); font-size: 13px; }
 .remembered-identity button { padding: 0; border: 0; color: var(--gold); background: none; text-decoration: underline; cursor: pointer; font: inherit; }
 .camp-chat-panel { display: grid; gap: 10px; margin: 10px 0; }

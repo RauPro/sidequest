@@ -17,6 +17,7 @@ import { SidePanel } from "./SidePanel";
 import type { EncounterAction, EncounterContext, EncounterState } from "./types";
 import type { CampTopic } from "@/domain/campGuide";
 import { trackAddedToCart, trackDemoCheckout, trackEvent, trackEventOnce, trackStartedCheckout } from "@/features/klaviyo/track";
+import { isSoldOut } from "@/domain/inventory";
 import { maskEmail } from "@/features/klaviyo/identity";
 import { recordLedger, updateLedger } from "@/features/klaviyo/ledger";
 
@@ -185,6 +186,7 @@ export function EncounterHost({
     }
     if (result.effect?.type === "add-to-bag") {
       const productId = result.effect.productId ?? state.productId;
+      if (isSoldOut(productId)) return;
       const previousCart = store.getSnapshot();
       store.add(productId);
       trackAddedToCart(previousCart, store.getSnapshot(), productId);
@@ -204,6 +206,7 @@ export function EncounterHost({
 
   const onChoose = (choiceId: string) => {
     const choice = node.choices.find((item) => item.id === choiceId);
+    if (choice?.action?.type === "add-to-bag" && isSoldOut(choice.action.productId ?? state.productId)) return;
     if (choice?.action?.type === "send-chat" && state.location === "camp") {
       if (!campPending) submitCampTurn(choice.action.content, choice.action.topic);
       return;
@@ -282,7 +285,15 @@ export function EncounterHost({
 
   return (
     <div className="encounter-layout">
-      <DialogueBox key={state.nodeId} node={dialogueNode} speakerOverride={speakerOverride} onChoose={onChoose}>
+      <DialogueBox
+        key={state.nodeId}
+        node={dialogueNode}
+        speakerOverride={speakerOverride}
+        onChoose={onChoose}
+        disabledChoiceIds={dialogueNode.choices
+          .filter((choice) => choice.action?.type === "add-to-bag" && isSoldOut(choice.action.productId ?? state.productId))
+          .map((choice) => choice.id)}
+      >
         {state.location === "oracle" && state.nodeId === "oracle-save" && state.deskMood && (
           <OracleSaveForm mood={state.deskMood} onEmailSubmitted={onEmailSubmitted} identityEmail={identityEmail} onForgetIdentity={onForgetIdentity} />
         )}

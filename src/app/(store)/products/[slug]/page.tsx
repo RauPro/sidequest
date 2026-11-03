@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { catalog, formatMoney, getProduct, isProductId } from "@/domain/catalog";
+import { isSoldOut } from "@/domain/inventory";
 import { AddProductToBag } from "@/features/products/AddProductToBag";
 import { productCopy } from "@/features/products/product-copy";
 import { ProductViewTracker } from "@/features/klaviyo/ProductViewTracker";
@@ -30,6 +31,7 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
   const { source = "shop" } = await searchParams;
   if (!isProductId(slug)) notFound();
   const product = getProduct(slug);
+  const soldOut = isSoldOut(product.id);
   const copy = productCopy[slug];
 
   return (
@@ -55,7 +57,8 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
             {copy.traits.map((trait) => <li key={trait}>{trait}</li>)}
           </ul>
           <p className={styles.price}>{formatMoney(product.priceMinor)}<span>USD · demo price</span></p>
-          <p className={styles.availability}>{product.available ? "Available in the demo" : "Currently unavailable"}</p>
+          {soldOut && <p className="sold-out-pill" role="status">Sold out</p>}
+          <p className={styles.availability}>{soldOut ? "Out of stock in the demo" : product.available ? "Available in the demo" : "Currently unavailable"}</p>
           <AddProductToBag id={product.id} />
         </div>
       </div>
