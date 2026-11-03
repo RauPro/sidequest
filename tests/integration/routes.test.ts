@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { POST as subscribe } from "@/app/api/subscribe/route";
 import { POST as identify } from "@/app/api/identify/route";
 import { POST as record } from "@/app/api/events/route";
+import { POST as campChat } from "@/app/api/camp/chat/route";
 
 function request(body: unknown, path = "subscribe") {
   return new Request(`http://localhost/api/${path}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -50,9 +51,45 @@ describe("scaffold API contracts", () => {
   });
   it("supports identified preference and allowlisted event contracts", async () => {
     expect((await identify(request({ email: "tester@example.com", preferences: { preferredCompanion: "ember" } }, "identify"))).status).toBe(200);
-    const event = { email: "tester@example.com", event: "Sidequest Product Viewed", eventId: "0305ce7f-9963-4ab8-9bf9-d702c0ac76fd", properties: { productId: "ember" } };
+    const event = {
+      email: "tester@example.com",
+      event: "Sidequest Product Viewed",
+      eventId: "0305ce7f-9963-4ab8-9bf9-d702c0ac76fd",
+      properties: { productId: "ember", discoverySource: "market" },
+    };
     expect((await record(request(event, "events"))).status).toBe(200);
     expect((await record(request({ ...event, event: "Placed Order" }, "events"))).status).toBe(400);
+    const campQuestion = {
+      email: "tester@example.com",
+      event: "Sidequest Camp Question Asked",
+      eventId: "0305ce7f-9963-4ab8-9bf9-d702c0ac76fd",
+      properties: { topic: "checkout" },
+    };
+    expect((await record(request(campQuestion, "events"))).status).toBe(200);
+    expect((await record(request({ ...campQuestion, properties: { topic: "checkout", question: "raw user text" } }, "events"))).status).toBe(400);
+    const oracleCompletion = {
+      email: "tester@example.com",
+      event: "Sidequest Oracle Completed",
+      eventId: "0305ce7f-9963-4ab8-9bf9-d702c0ac76fd",
+      properties: { recommendedProductId: "ember", ruleVersion: "2", deskMood: "bold", visualStyle: "fantasy" },
+    };
+    expect((await record(request(oracleCompletion, "events"))).status).toBe(200);
+    expect((await record(request({ ...oracleCompletion, properties: { ...oracleCompletion.properties, ruleVersion: "1" } }, "events"))).status).toBe(400);
+    expect((await record(request({
+      email: "tester@example.com",
+      event: "Sidequest Location Visited",
+      eventId: "0305ce7f-9963-4ab8-9bf9-d702c0ac76fd",
+      properties: { location: "camp" },
+    }, "events"))).status).toBe(200);
+  });
+  it("keeps the Camp API demo-only and rejects malformed chat requests", async () => {
+    const response = await campChat(request({ messages: [{ role: "user", content: "How does checkout work?" }] }, "camp/chat"));
+    expect(response.status).toBe(200);
+    const result = await response.json();
+    expect(result).toMatchObject({ status: "simulated", open: true });
+    expect(result).not.toHaveProperty("followUp");
+    expect((await campChat(request({ messages: [{ role: "agent", content: "Hello" }] }, "camp/chat"))).status).toBe(400);
+    expect(fetch).not.toHaveBeenCalled();
   });
   it("fails closed for live mode without an allowlisted recipient", async () => {
     vi.stubEnv("SIDEQUEST_MODE", "live");

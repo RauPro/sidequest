@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "next dev",
+    "assets:build": "node scripts/build-game-assets.mjs",
     "images:export": "node scripts/export-product-images.mjs",
     "prebuild": "npm run images:export",
     "build": "next build",

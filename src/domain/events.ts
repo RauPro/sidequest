@@ -1,7 +1,9 @@
 export const eventNames = [
+  "Sidequest Location Visited",
   "Sidequest Product Viewed",
   "Sidequest Bag Updated",
   "Sidequest Oracle Completed",
+  "Sidequest Camp Question Asked",
   "Sidequest Demo Checkout Completed",
 ] as const;
 

@@ -5,7 +5,7 @@ import { subscribeProfile } from "@/server/klaviyo/subscriptions";
 import { GET as subscribeConfig, POST as subscribeRoute } from "@/app/api/subscribe/route";
 
 const email = "sidequest-test@example.com";
-const event = { email, event: "Sidequest Product Viewed" as const, eventId: "0305ce7f-9963-4ab8-9bf9-d702c0ac76fd", properties: { productId: "ember" as const } };
+const event = { email, event: "Sidequest Product Viewed" as const, eventId: "0305ce7f-9963-4ab8-9bf9-d702c0ac76fd", properties: { productId: "ember" as const, discoverySource: "shop" as const } };
 const profile = () => Response.json({ data: { type: "profile", id: "profile-test" } }, { status: 200 });
 const mockFetch = vi.fn<typeof fetch>();
 const body = (index: number) => JSON.parse(String(mockFetch.mock.calls[index][1]?.body));
@@ -60,7 +60,7 @@ describe("live Klaviyo adapters with mocked transport", () => {
   });
   it("keeps demo checkout totals out of revenue fields", async () => {
     mockFetch.mockResolvedValueOnce(new Response(null, { status: 202 }));
-    await recordEvent({ ...event, event: "Sidequest Demo Checkout Completed", properties: { demoTotalMinor: 2400, currency: "USD", demoOrderId: event.eventId } });
+    await recordEvent({ ...event, event: "Sidequest Demo Checkout Completed", properties: { productIds: ["ember"], quantities: [1], demoTotalMinor: 2400, currency: "USD", demoOrderId: event.eventId } });
     expect(body(0).data.attributes.properties).toMatchObject({ demoTotalMinor: 2400, is_demo: true });
     expect(body(0).data.attributes).not.toHaveProperty("value");
     expect(body(0).data.attributes).not.toHaveProperty("value_currency");

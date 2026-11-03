@@ -53,4 +53,6 @@ Verified end to end:
 - The product feed remains public and returns all three products.
 - Typecheck, lint, 39 unit/integration tests and 22 desktop/mobile browser tests passed for the implementation.
 
-The agent's shopper-facing channel remains off. The Camp widget and shopper authentication are not installed by this change. The website profile-save flow and the skill's identified-profile behavior are connected and verified; using that identity in live web chat remains a separate launch step.
+Camp is an in-game chat encounter backed by the server-only Customer Agent API adapter. `CAMP_CHAT_MODE=demo` keeps the deterministic village guide local; live requests use the beta conversation and response endpoints with `KLAVIYO_CUSTOMER_AGENT_MODE=preview` by default. No Klaviyo onsite/chat widget is loaded. The browser never receives the Customer Agent API key.
+
+For a new live conversation, Camp offers "Share your email so the guide can follow up (optional)" before the first turn, or when the visitor chooses [Ask my own question]; [Skip] continues without an email. A remembered identity is used without asking. The server attaches `customer.email` only during conversation creation and only when the email is allowlisted by `KLAVIYO_LIVE_ALLOWED_EMAILS`. Otherwise it creates the conversation without a customer. There is no PATCH operation. The response includes `followUp: true` only when an allowlisted email was attached; demo responses never claim follow-up and demo mode never displays a handoff.

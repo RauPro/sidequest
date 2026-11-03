@@ -10,14 +10,14 @@ for (const product of products) {
   test(`${product.name} has a local product page with its own metadata`, async ({ page }, testInfo) => {
     const response = await page.goto(`/products/${product.id}`);
     expect(response?.status()).toBe(200);
-    await expect(page.getByRole("navigation", { name: "Main navigation" })).toHaveCount(1);
+    await expect(page.getByRole("navigation", { name: "Game navigation" })).toHaveCount(1);
     await expect(page.locator("main")).toHaveCount(1);
     await expect(page).toHaveTitle(`${product.name} — Desk companion · SIDEQUEST`);
     await expect(page.getByRole("heading", { level: 1, name: product.name, exact: true })).toBeVisible();
     await expect(page.getByText(product.subtitle, { exact: true })).toBeVisible();
-    await expect(page.getByText(`${product.price}USD · demo price`)).toBeVisible();
+    await expect(page.locator("p").filter({ hasText: product.price }).first()).toContainText("USD · demo price");
     await expect(page.getByRole("img", { name: new RegExp(product.name) })).toBeVisible();
-    await expect(page.getByRole("region", { name: "Demo purchase information" })).toContainText("no payment is collected");
+    await expect(page.getByText("Available in the demo", { exact: true })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await page.screenshot({ path: testInfo.outputPath(`${product.id}.png`), fullPage: true });
   });
@@ -25,17 +25,18 @@ for (const product of products) {
 
 test("product pages and the shop share a persisted cart", async ({ page }) => {
   await page.goto("/shop");
-  await page.getByRole("link", { name: "Ember", exact: true }).click();
-  await expect(page).toHaveURL(/\/products\/ember$/);
+  await page.getByRole("link", { name: "Details", exact: true }).first().click();
+  await expect(page).toHaveURL(/\/products\/ember\?source=shop$/);
   await page.getByRole("button", { name: "Add Ember to bag", exact: true }).click();
   await expect(page.getByRole("status").filter({ hasText: "Ember added" })).toHaveText("Ember added to your bag.");
-  await expect(page.getByText("Bag · 1", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Bag, 1 item" })).toBeVisible();
   await page.getByRole("link", { name: "Meet Moss →", exact: true }).click();
-  await expect(page.getByText("Bag · 1", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Bag, 1 item" })).toBeVisible();
   await page.getByRole("button", { name: "Add Moss to bag", exact: true }).click();
   await page.reload();
-  await expect(page.getByText("Bag · 2", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Bag, 2 items" })).toBeVisible();
   await page.getByRole("link", { name: "View bag in Shop view →", exact: true }).click();
+  await page.getByRole("button", { name: "Bag, 2 items" }).click();
   await expect(page.getByText("Total: $42.00", { exact: true })).toBeVisible();
 });
 

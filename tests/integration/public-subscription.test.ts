@@ -93,7 +93,7 @@ describe("public newsletter signup", () => {
   });
   it("does not expose profile and event writes by enabling public subscriptions", async () => {
     await expect(identifyProfile({ email })).rejects.toMatchObject({ code: "recipient_not_allowed" });
-    await expect(recordEvent({ email, event: "Sidequest Product Viewed", eventId: "0305ce7f-9963-4ab8-9bf9-d702c0ac76fd", properties: {} })).rejects.toMatchObject({ code: "recipient_not_allowed" });
+    await expect(recordEvent({ email, event: "Sidequest Product Viewed", eventId: "0305ce7f-9963-4ab8-9bf9-d702c0ac76fd", properties: { productId: "ember", discoverySource: "shop" } })).rejects.toMatchObject({ code: "recipient_not_allowed" });
     expect(fetchMock).not.toHaveBeenCalled();
   });
   it("retains demo isolation even with public access configured", async () => {

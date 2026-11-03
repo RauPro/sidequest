@@ -4,6 +4,7 @@ import type { LocationId } from "../world/villageMap";
 export type GameEvent =
   | { type: "ready" }
   | { type: "open"; id: LocationId }
+  | { type: "open-bag" }
   | { type: "nearby"; id: LocationId | null }
   | { type: "hover"; id: LocationId | null }
   | { type: "player-tile"; col: number; row: number };

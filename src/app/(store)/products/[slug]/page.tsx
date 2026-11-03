@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { catalog, formatMoney, getProduct, isProductId } from "@/domain/catalog";
 import { AddProductToBag } from "@/features/products/AddProductToBag";
-import { CompanionIllustration } from "@/features/products/CompanionIllustration";
 import { productCopy } from "@/features/products/product-copy";
+import { ProductViewTracker } from "@/features/klaviyo/ProductViewTracker";
 import styles from "@/features/products/product-page.module.css";
 
-type ProductPageProps = { params: Promise<{ slug: string }> };
+type ProductPageProps = { params: Promise<{ slug: string }>; searchParams: Promise<{ source?: string }> };
 
 export function generateStaticParams() {
   return catalog.map(({ id }) => ({ slug: id }));
@@ -24,22 +25,29 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   };
 }
 
-export default async function ProductPage({ params }: ProductPageProps) {
+export default async function ProductPage({ params, searchParams }: ProductPageProps) {
   const { slug } = await params;
+  const { source = "shop" } = await searchParams;
   if (!isProductId(slug)) notFound();
   const product = getProduct(slug);
   const copy = productCopy[slug];
 
   return (
     <article className={styles.page}>
-      <Link href="/shop" className={styles.back}>← Back to the collection</Link>
+      <ProductViewTracker productId={product.id} source={source} />
+      <nav className={styles.navigation} aria-label="Product navigation">
+        <Link href="/shop" className="rpg-btn">← Back to Market Hall</Link>
+        <Link href="/?visit=market" className="rpg-btn">Find in the village</Link>
+      </nav>
       <div className={styles.hero}>
-        <figure className={styles.figure}>
-          <div className={styles.art}><CompanionIllustration id={product.id} /></div>
-          <figcaption>Illustrated concept · Fictional desk companion</figcaption>
+        <figure className={`${styles.figure} rpg-frame`}>
+          <div className={styles.art}>
+            <Image src={`/game/products/${product.id}.png`} alt={`${product.name} companion`} width={420} height={420} className="game-image" unoptimized />
+          </div>
+          <figcaption>Willow Market · Demo companion</figcaption>
         </figure>
         <div>
-          <p className={styles.eyebrow}>Willow Market / Desk companions</p>
+          <p className={styles.eyebrow}>Market Hall / Companions</p>
           <h1 className={styles.name}>{product.name}</h1>
           <p className={styles.subtitle}>{copy.subtitle}</p>
           <p className={styles.description}>{copy.description}</p>
@@ -51,15 +59,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <AddProductToBag id={product.id} />
         </div>
       </div>
-      <section className={styles.demo} aria-label="Demo purchase information">
-        <h2>A little adventure, in demo form.</h2>
-        <p>Adding a companion saves it to your demo bag. Checkout is simulated: no payment is collected and no physical item is shipped.</p>
-      </section>
       <section className={styles.others}>
-        <h2>Meet the rest of the village</h2>
+        <h2>Meet the other companions</h2>
         <nav aria-label="Other companions">
           {catalog.filter(({ id }) => id !== product.id).map((other) => (
-            <Link key={other.id} href={`/products/${other.id}`}>
+            <Link key={other.id} href={`/products/${other.id}?source=${source}`}>
               <span className={styles.dot} style={{ backgroundColor: other.color }} aria-hidden="true" />
               Meet {other.name} →
             </Link>
