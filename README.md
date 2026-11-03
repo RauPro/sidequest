@@ -6,11 +6,21 @@ An explorable pixel-art storefront showcasing Klaviyo across the customer journe
 
 ![Willow Market village gameplay](docs/media/village.png)
 
+## Reviewer quick tour (2 min)
+
+1. Visit the Oracle.
+2. Add the companion to your bag.
+3. Press **L** to open the Raven Ledger and see each Klaviyo call.
+4. Open [`/?letter=ember`](https://sidequest.raul.engineer/?letter=ember), the email deep link.
+5. Open the [catalog feed](https://sidequest.raul.engineer/catalog/klaviyo.json).
+
+The public site runs in demo mode unless live tracking is configured. See the [Klaviyo account runbook](docs/KLAVIYO-ACCOUNT-RUNBOOK.md) for account-side setup.
+
 ## Klaviyo touchpoints
 
 | Zone | API / endpoint | Metric or properties | Code |
 | --- | --- | --- | --- |
-| Village and Market | Client `POST /client/events` | `Sidequest Location Visited {location}`, `Sidequest Product Viewed {productId, discoverySource}` | `src/features/game/GameShell.tsx`, `src/features/encounters/EncounterHost.tsx` |
+| Village and Market | Client `POST /client/events` | `Sidequest Location Visited {location}`, `Viewed Product {ProductID, DiscoverySource}` | `src/features/game/GameShell.tsx`, `src/features/encounters/EncounterHost.tsx` |
 | Shop and cart | Client `POST /client/events` | `Viewed Product`, `Added to Cart`, `Started Checkout` | `src/features/klaviyo/track.ts`, `src/domain/klaviyoMetrics.ts` |
 | Oracle | `POST /api/oracle/preferences`; Client events | `Sidequest Oracle Completed {recommendedProductId, ruleVersion, deskMood, visualStyle}` | `src/features/oracle/`, `src/app/api/oracle/preferences/` |
 | Camp | `POST /api/camp/chat`; Client event | `Sidequest Camp Question Asked {topic}`; raw chat text is not an event property | `src/features/encounters/EncounterHost.tsx`, `src/app/api/camp/chat/` |
