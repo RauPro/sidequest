@@ -22,12 +22,12 @@ for (const outcome of ["accepted", "confirmation", "unknown"] as const) {
     const consent = page.getByRole("checkbox", { name: /agree/i });
     await expect(consent).not.toBeChecked();
     await consent.check();
-    await page.getByRole("button", { name: "Subscribe to village letters" }).click();
+    await page.getByRole("button", { name: "Send letter request" }).click();
     await expect(page.getByRole("status")).toContainText(outcome === "accepted"
       ? "Subscription is not yet verified here."
       : outcome === "confirmation" ? "Check your inbox to confirm your subscription"
       : "The subscription result is unknown.");
-    await expect(page.getByRole("button", { name: "Request submitted" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Send letter request" })).toBeDisabled();
     await expect(page.getByLabel("Email address", { exact: true })).toHaveValue("tester@example.com");
     expect(submissions).toBe(1);
   });

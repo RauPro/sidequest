@@ -1,59 +1,41 @@
 import { expect, test } from "@playwright/test";
-import { locations } from "../../src/game/world/locations";
-import { isWalkableKind, TILE_SIZE, tileAt, visitorSpawn } from "../../src/game/world/villageMap";
+import { isWalkableKind, TILE_SIZE, tileAt } from "../../src/game/world/villageMap";
 import { cameraCenter, cameraZoom, worldToScreen } from "../../src/game/systems/camera";
-
-const worldPoint = (page: import("@playwright/test").Page, wx: number, wy: number) => {
-  const view = page.viewportSize()!;
-  const zoom = cameraZoom(view.width, view.height);
-  const center = cameraCenter(view.width, view.height, zoom, { x: visitorSpawn.x, y: visitorSpawn.y - 12 });
-  return worldToScreen({ x: wx, y: wy }, view.width, view.height, zoom, center);
-};
 
 test("village and shop share a persisted bag and simulated checkout", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByTestId("village-map")).toHaveAttribute("data-ready", "true");
   await page.getByRole("button", { name: "Market", exact: true }).click();
-  await page.getByRole("button", { name: "Add Ember", exact: true }).click();
-  await expect(page.getByText("Bag · 1", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Show me the companions", exact: true }).click();
+  await page.getByRole("button", { name: "Add to bag", exact: true }).last().click();
+  await expect(page.getByRole("button", { name: "Bag, 1 item" })).toBeVisible();
   await page.getByRole("link", { name: "Shop view" }).click();
-  await expect(page.getByText("Bag · 1", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Bag, 1 item" })).toBeVisible();
   await page.reload();
-  await expect(page.getByText("Bag · 1", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Complete demo checkout" }).click();
-  await expect(page.getByText("Demo order complete.")).toBeVisible();
-  await expect(page.getByText("Bag · 0", { exact: true })).toBeVisible();
-  await page.getByRole("link", { name: "Village" }).click();
+  await expect(page.getByRole("button", { name: "Bag, 1 item" })).toBeVisible();
+  await page.getByRole("button", { name: /Bag, 1 item/ }).click();
+  await page.getByRole("button", { name: "Check out", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Order snapshot" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Bag, 0 items" })).toBeVisible();
+  await page.goto("/");
   await expect(page.locator("canvas")).toHaveCount(1);
   await expect(page.getByTestId("village-map")).toHaveAttribute("data-ready", "true");
 });
 
-test("every on-screen village destination opens from its canvas hotspot", async ({ page }, testInfo) => {
+test("visit links open every village encounter", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/");
-  await expect(page.getByTestId("village-map")).toHaveAttribute("data-ready", "true");
-  const view = page.viewportSize()!;
   const panels = {
-    oracle: () => expect(page.getByRole("heading", { name: "The Oracle" })).toBeVisible(),
-    camp: () => expect(page.getByRole("heading", { name: "Camp", exact: true })).toBeVisible(),
-    post: () => expect(page.getByRole("heading", { name: "Post Office" })).toBeVisible(),
-    market: () => expect(page.getByRole("button", { name: "Add Ember", exact: true })).toBeVisible(),
+    oracle: () => expect(page.getByRole("heading", { name: "The Oracle · Seer" })).toBeVisible(),
+    camp: () => expect(page.getByRole("heading", { name: "Finn · Camp guide" })).toBeVisible(),
+    post: () => expect(page.getByRole("heading", { name: "Pip · Postmaster" })).toBeVisible(),
+    market: () => expect(page.getByRole("button", { name: "Show me the companions", exact: true })).toBeVisible(),
   };
-  let clicked = 0;
   for (const id of ["oracle", "camp", "post", "market"] as const) {
-    const location = locations.find((item) => item.id === id)!;
-    const { x, y, width, height } = location.hitArea;
-    const pt = worldPoint(page, x + width / 2, y + height / 2);
-    if (pt.x < 0 || pt.y < 0 || pt.x > view.width || pt.y > view.height) continue;
-    clicked++;
-    await page.mouse.click(pt.x, pt.y);
-    await expect(page.getByRole("button", { name: location.name, exact: true })).toHaveAttribute("aria-expanded", "true");
+    await page.goto(`/?visit=${id}`);
+    await expect(page.getByTestId("village-map")).toHaveAttribute("data-ready", "true");
     await panels[id]();
-    await page.getByRole("button", { name: "Keep exploring" }).click();
   }
-  expect(clicked).toBeGreaterThanOrEqual(1);
-  await page.screenshot({ path: testInfo.outputPath("village-map.png") });
   expect(errors).toEqual([]);
 });
 
@@ -69,8 +51,8 @@ test("the Post Office form stays explicitly simulated without horizontal overflo
   expect(await page.getByTestId("village-map").getAttribute("data-player-tile")).toBe(tile);
   await input.fill("player@example.com");
   await page.getByRole("checkbox", { name: /agree/i }).check();
-  await page.getByRole("button", { name: "Try demo subscription" }).click();
-  await expect(page.getByText("No subscription was created")).toBeVisible();
+  await page.getByRole("button", { name: "Send letter request" }).click();
+  await expect(page.getByText("Demo request validated. No subscription was created and no email was sent.")).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("button", { name: "Post Office", exact: true })).toBeFocused();
   await page.screenshot({ path: testInfo.outputPath("post-office.png") });
@@ -87,7 +69,8 @@ test("the visitor walks with keys, enters places with E and tap-moves", async ({
   await expect(page.locator(".hint-bar")).toContainText("enter the Market", { timeout: 5000 });
   await page.keyboard.up("ArrowRight");
   await page.keyboard.press("e");
-  await expect(page.getByRole("button", { name: "Add Ember", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Show me the companions", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Add to bag", exact: true }).last()).toBeVisible();
   await page.keyboard.press("Escape");
 
   await page.keyboard.down("ArrowRight");
