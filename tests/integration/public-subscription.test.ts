@@ -7,9 +7,10 @@ const { checkBotId } = vi.hoisted(() => ({ checkBotId: vi.fn() }));
 vi.mock("botid/server", () => ({ checkBotId }));
 const fetchMock = vi.fn<typeof fetch>();
 const email = "new-visitor@example.com";
+let requestIp = 0;
 const list = (optIn = "double_opt_in") => Response.json({ data: { type: "list", id: "test-list", attributes: { opt_in_process: optIn } } });
 const request = (body: unknown = { email, consent: true }) => new Request("https://sidequest.example/api/subscribe", {
-  method: "POST", headers: { "Content-Type": "application/json", Origin: "https://sidequest.example" }, body: JSON.stringify(body),
+  method: "POST", headers: { "Content-Type": "application/json", Origin: "https://sidequest.example", "x-forwarded-for": `198.51.100.${++requestIp}` }, body: JSON.stringify(body),
 });
 
 beforeEach(() => {
