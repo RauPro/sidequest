@@ -76,7 +76,7 @@ export function StoreGameLayout({
             store={store}
             receipt={receipt}
             onAction={(action) => handleAction(action)}
-            onCartUpdated={() => trackBagUpdated(store.getSnapshot())}
+            onCartUpdated={() => undefined}
             dialog
           />
         </div>
