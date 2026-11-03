@@ -7,8 +7,9 @@ test("letter deep link opens a personalized Post Office letter and visits its co
   await expect(dialog).toContainText("Ember");
   await expect(page).not.toHaveURL(/letter=/);
   await dialog.getByRole("button", { name: "Visit Ember at the Market", exact: true }).click();
-  await expect(page.getByRole("complementary", { name: "Ember details" })).toBeVisible();
-  await expect(page.getByRole("button", { name: /Add to bag/ })).toBeVisible();
+  const details = page.getByRole("complementary", { name: "Ember details" });
+  await expect(details).toBeVisible();
+  await expect(details.getByRole("button", { name: "Add to bag", exact: true })).toBeVisible();
 });
 
 test("Oracle reveals Ember for bold/fantasy and adds the recommendation to the shared bag", async ({ page }) => {
