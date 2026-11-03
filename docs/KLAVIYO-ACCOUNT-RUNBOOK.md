@@ -33,3 +33,13 @@ NEXT_PUBLIC_SIDEQUEST_SOLD_OUT=bolt
 3. Open `/products/bolt` or the Market in a build with `NEXT_PUBLIC_SIDEQUEST_SOLD_OUT=bolt`. Confirm Add to bag is disabled and the raven form is visible.
 4. Submit a test address only against the demo build to see the simulated result. Do not switch to live mode or submit a live Back in Stock request unless account-side consequences are explicitly authorized.
 5. For account setup validation, use Klaviyo's template and flow previews. A 202 response in the browser means Klaviyo accepted a request; it does not prove a flow ran or an email was delivered.
+
+## Local fallback for the presentation
+
+While online, install dependencies and run `npm run demo:build`. This prepares an isolated production build in ignored `.sidequest-demo/`, with Bolt sold out and all four integration modes set to demo. It copies application inputs only, excludes `.env` files and Vercel state, and clears provider credentials. The regular production build and local environment are unchanged. Google Fonts are downloaded during this preparation; the resulting fonts and artwork are served locally.
+
+For the presentation, run `npm run demo:start` and open <http://127.0.0.1:3110>. Keep that terminal running. Set `SIDEQUEST_DEMO_PORT` if the port is occupied. No rebuild or external connection is needed to start the prepared version; keep this checkout and its installed dependencies on the presentation computer. Rebuild after source changes.
+
+In the local version, visit the Oracle, add Ember or Moss to the bag, open the Raven Ledger, ask Finn a question, and submit a demo back-in-stock request for Bolt. Entries must say `simulated`; this does not demonstrate actual email delivery. A failed live request remains `failed`, so changing to this local version is an explicit fallback, not an automatic retry or a fabricated success. Keep the real email recordings available locally as separate evidence.
+
+For a live rehearsal, use the exact authorized `+alias` in both `ORACLE_PROFILE_ALLOWED_EMAILS` and `KLAVIYO_LIVE_ALLOWED_EMAILS`; aliases do not inherit the base address's permission. Confirm double opt-in in that inbox before testing subscriber-only messages. Preserve the one-hour cart delay, capture receipt of each email, and return Bolt to zero stock after the restock demonstration.
