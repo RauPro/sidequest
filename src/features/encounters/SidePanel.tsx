@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { cartLines, cartTotal, maxQuantity } from "@/domain/cart";
-import { formatMoney, getProduct } from "@/domain/catalog";
+import { formatMoney, getProduct, productIds } from "@/domain/catalog";
 import type { CartStore } from "@/features/cart/store";
 import type { DemoOrder } from "@/domain/orders";
 import type { EncounterAction, SideView } from "./types";
@@ -50,8 +50,9 @@ export function SidePanel({
         </button>
         {side.browsing && (
           <div className="product-carousel">
-            <button type="button" className="rpg-btn" onClick={() => onAction({ type: "browse-previous" })}>Previous</button>
-            <button type="button" className="rpg-btn" onClick={() => onAction({ type: "browse-next" })}>Next</button>
+            <button type="button" className="rpg-btn" aria-label="Previous companion" onClick={() => onAction({ type: "browse-prev" })}>◀</button>
+            <span>{productIds.indexOf(product.id) + 1}/3</span>
+            <button type="button" className="rpg-btn" aria-label="Next companion" onClick={() => onAction({ type: "browse-next" })}>▶</button>
           </div>
         )}
         <button type="button" className="rpg-btn side-keep-exploring" onClick={() => onAction({ type: "close" })}>Keep exploring</button>
@@ -92,6 +93,7 @@ export function SidePanel({
     <aside className="rpg-frame side-panel receipt-side-panel" role={dialog ? "dialog" : "region"} aria-modal={dialog ? "false" : undefined} aria-label="Demo order receipt" tabIndex={dialog ? -1 : undefined}>
       <p className="side-panel-eyebrow">DEMO RECEIPT</p>
       <h2>Order snapshot</h2>
+      {receipt && <p>Demo order · {receipt.id.slice(0, 8)}</p>}
       {receipt?.lines.map((line) => (
         <p key={line.productId}>{line.quantity} × {line.name} · {formatMoney(line.unitMinor * line.quantity)}</p>
       ))}

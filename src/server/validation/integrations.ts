@@ -24,7 +24,7 @@ export const eventSchema = z.object({
     demoTotalMinor: z.number().int().min(0).max(1_000_000).optional(),
     currency: z.literal("USD").optional(),
     recommendedProductId: z.enum(productIds).optional(),
-    ruleVersion: z.literal("1").optional(),
+    ruleVersion: z.enum(["1", "2"]).optional(),
     demoOrderId: z.uuid().optional(),
   }).strict(),
 }).strict();

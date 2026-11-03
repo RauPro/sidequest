@@ -38,3 +38,22 @@ describe("Market encounter", () => {
     expect(chooseEncounterOption(bag, getEncounterNode(bag, context)!, "explore").state.location).toBeNull();
   });
 });
+
+describe("Oracle encounter", () => {
+  it("answers both questions, reveals the rule-v2 reading, and returns to it from save", () => {
+    let state = createEncounterState("oracle");
+    state = chooseEncounterOption(state, getEncounterNode(state, context)!, "bold").state;
+    expect(state.nodeId).toBe("oracle-realm");
+    state = chooseEncounterOption(state, getEncounterNode(state, context)!, "nature").state;
+    const reveal = getEncounterNode(state, context)!;
+    expect(state.nodeId).toBe("oracle-reveal");
+    expect(reveal.text).toBe("You seek a bold desk, and Ember answers. The nature stars also whisper of Moss.");
+    expect(reveal.side).toEqual({ kind: "product", productId: "ember" });
+    state = chooseEncounterOption(state, reveal, "alternate").state;
+    expect(getEncounterNode(state, context)?.side).toEqual({ kind: "product", productId: "moss" });
+    state = chooseEncounterOption(state, getEncounterNode(state, context)!, "remember").state;
+    expect(state.nodeId).toBe("oracle-save");
+    state = chooseEncounterOption(state, getEncounterNode(state, context)!, "back").state;
+    expect(getEncounterNode(state, context)?.text).toContain("You seek a bold desk");
+  });
+});

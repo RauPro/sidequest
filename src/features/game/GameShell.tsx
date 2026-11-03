@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState, type SyntheticEvent } from "react";
 import { cartCount } from "@/domain/cart";
+import { recommend } from "@/domain/recommendations";
 import { createGameBridge } from "@/game/systems/bridge";
 import { locations, type LocationId } from "@/game/world/locations";
 import { useCart } from "@/features/cart/CartProvider";
@@ -12,6 +13,7 @@ import { createEncounterState, emptyEncounter } from "@/features/encounters/engi
 import type { EncounterState } from "@/features/encounters/types";
 import { GameHud } from "./GameHud";
 import { QuestCard } from "./QuestCard";
+import { readOracleReading } from "@/features/oracle/reading";
 import {
   updateQuestProgress,
   useQuestProgress,
@@ -22,6 +24,23 @@ const PhaserHost = dynamic(() => import("@/features/world/PhaserHost"), {
   loading: () => <p className="game-loader" role="status">Loading village…</p>,
 });
 
+function newEncounter(location: LocationId | "bag"): EncounterState {
+  const state = createEncounterState(location);
+  if (location !== "oracle") return state;
+  const reading = readOracleReading();
+  if (!reading) return state;
+  const result = recommend(reading.mood, reading.realm);
+  return {
+    ...state,
+    nodeId: "oracle-reveal",
+    deskMood: reading.mood,
+    visualStyle: reading.realm,
+    recommendedProductId: result.productId,
+    alternateProductId: result.alternateId ?? null,
+    productId: result.productId,
+  };
+}
+
 export function GameShell() {
   const [bridge] = useState(createGameBridge);
   const [ready, setReady] = useState(false);
@@ -31,6 +50,7 @@ export function GameShell() {
   const [encounter, setEncounter] = useState<EncounterState>(emptyEncounter);
   const panel = encounter.location;
   const [slow, setSlow] = useState(false);
+  const [hintOverride, setHintOverride] = useState<string | null>(null);
   const [opener, setOpener] = useState<HTMLElement | null>(null);
   const deepLinkHandled = useRef(false);
   const quest = useQuestProgress();
@@ -47,7 +67,7 @@ export function GameShell() {
           const target = visit === "bag" ? "bag" : locations.find((location) => location.id === visit)?.id;
           if (target) {
             setOpener(document.querySelector("[data-game-stage]"));
-            setEncounter(createEncounterState(target));
+            setEncounter(newEncounter(target));
             if (target === "market") updateQuestProgress((current) => ({ ...current, market: true }));
           }
           window.history.replaceState(window.history.state, "", `${window.location.pathname}${window.location.hash}`);
@@ -55,17 +75,19 @@ export function GameShell() {
       }
     }
     if (e.type === "open") {
+      setHintOverride(null);
       setOpener(document.querySelector("[data-game-stage]"));
-      setEncounter(createEncounterState(e.id));
+      setEncounter(newEncounter(e.id));
       if (e.id === "market") updateQuestProgress((current) => ({ ...current, market: true }));
     }
     if (e.type === "open-bag") {
+      setHintOverride(null);
       setOpener(document.querySelector("[data-game-stage]"));
-      setEncounter(createEncounterState("bag"));
+      setEncounter(newEncounter("bag"));
     }
-    if (e.type === "nearby") setNearby(e.id);
-    if (e.type === "hover") setHover(e.id);
-    if (e.type === "player-tile") setTile({ col: e.col, row: e.row });
+    if (e.type === "nearby") { setNearby(e.id); if (e.id) setHintOverride(null); }
+    if (e.type === "hover") { setHover(e.id); if (e.id) setHintOverride(null); }
+    if (e.type === "player-tile") { setTile({ col: e.col, row: e.row }); setHintOverride(null); }
   }), [bridge]);
   useEffect(() => { bridge.dispatch({ type: "input", enabled: panel === null }); }, [bridge, panel]);
   useEffect(() => {
@@ -80,15 +102,22 @@ export function GameShell() {
     if (e) setOpener(e.currentTarget as HTMLElement);
     else setOpener(document.querySelector("[data-game-stage]"));
     if (id === "market") updateQuestProgress((current) => ({ ...current, market: true }));
-    setEncounter(createEncounterState(id));
+    setEncounter(newEncounter(id));
   };
   const nearLoc = locations.find((l) => l.id === nearby);
   const hoverLoc = locations.find((l) => l.id === hover);
-  const hint = nearLoc
+  const hint = hintOverride ?? (nearLoc
     ? `Press E or tap to enter the ${nearLoc.name} — ${nearLoc.purpose}`
     : hoverLoc
       ? `${hoverLoc.name} — ${hoverLoc.purpose}`
-      : "Move: arrow keys or tap a path · Interact: E or tap a place";
+      : "Move: arrow keys or tap a path · Interact: E or tap a place");
+
+  const pointToLocation = (id: LocationId) => {
+    const target = locations.find((location) => location.id === id);
+    if (!target) return;
+    bridge.dispatch({ type: "highlight", id });
+    setHintOverride(`Follow the glow to the ${target.name}`);
+  };
 
   return <main id="main" className="game-shell" data-testid="village-map" data-ready={ready ? "true" : undefined} data-player-tile={tile ? `${tile.col},${tile.row}` : undefined}>
     <h1 className="visually-hidden">Willow Market</h1>
@@ -119,6 +148,6 @@ export function GameShell() {
       <span className="controls-keyboard"><kbd>WASD/↑↓←→</kbd> Move <kbd>E</kbd> Interact <kbd>B</kbd> Bag <kbd>Esc</kbd> Close</span>
       <span className="controls-touch">Tap a path to move · Tap a place to visit</span>
     </aside>
-    {panel && <EncounterHost state={encounter} onStateChange={setEncounter} onClose={() => setEncounter(emptyEncounter)} opener={opener} />}
+    {panel && <EncounterHost state={encounter} onStateChange={setEncounter} onClose={() => setEncounter(emptyEncounter)} opener={opener} onGotoLocation={pointToLocation} />}
   </main>;
 }

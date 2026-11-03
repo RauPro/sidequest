@@ -1,4 +1,5 @@
 import { productIds, type ProductId } from "@/domain/catalog";
+import { recommend } from "@/domain/recommendations";
 import type {
   Choice,
   EncounterAction,
@@ -14,11 +15,15 @@ export const emptyEncounter: EncounterState = Object.freeze({
   nodeId: null,
   productId: "ember",
   receipt: null,
+  deskMood: null,
+  visualStyle: null,
+  recommendedProductId: null,
+  alternateProductId: null,
 });
 
 const startNodes = {
   market: "market-start",
-  oracle: "legacy-oracle",
+  oracle: "oracle-start",
   camp: "legacy-camp",
   post: "legacy-post",
   bag: "bag",
@@ -40,12 +45,16 @@ export function applyEncounterAction(
   switch (action.type) {
     case "add-to-bag":
       return {
-        state: { ...state, nodeId: "market-added", productId: action.productId ?? state.productId },
+        state: {
+          ...state,
+          nodeId: state.location === "oracle" ? "oracle-reveal" : "market-added",
+          productId: action.productId ?? state.productId,
+        },
         effect: action,
       };
     case "browse-next":
       return { state: { ...state, productId: rotateProduct(state.productId, 1) } };
-    case "browse-previous":
+    case "browse-prev":
       return { state: { ...state, productId: rotateProduct(state.productId, -1) } };
     case "open-bag":
       return { state: { ...state, location: "bag", nodeId: "bag", receipt: null } };
@@ -53,6 +62,34 @@ export function applyEncounterAction(
       return { state: { ...state, nodeId: "market-receipt" }, effect: action };
     case "close":
       return { state: emptyEncounter };
+    case "oracle-answer":
+      return {
+        state: { ...state, nodeId: "oracle-realm", deskMood: action.mood, visualStyle: null },
+      };
+    case "oracle-realm": {
+      if (!state.deskMood) return { state };
+      const result = recommend(state.deskMood, action.realm);
+      return {
+        state: {
+          ...state,
+          nodeId: "oracle-reveal",
+          visualStyle: action.realm,
+          productId: result.productId,
+          recommendedProductId: result.productId,
+          alternateProductId: result.alternateId ?? null,
+        },
+      };
+    }
+    case "oracle-show-alternate":
+      return { state: state.alternateProductId ? { ...state, productId: state.alternateProductId } : state };
+    case "oracle-show-primary":
+      return { state: state.recommendedProductId ? { ...state, productId: state.recommendedProductId } : state };
+    case "save-oracle":
+      return { state: { ...state, nodeId: "oracle-save" } };
+    case "oracle-back":
+      return { state: { ...state, nodeId: "oracle-reveal" } };
+    case "oracle-reset":
+      return { state: createEncounterState("oracle") };
     case "goto-location":
       return { state: createEncounterState(action.location) };
   }

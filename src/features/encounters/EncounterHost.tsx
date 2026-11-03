@@ -3,7 +3,10 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { cartCount } from "@/domain/cart";
 import { createDemoOrder } from "@/domain/orders";
-import { OraclePanel } from "@/features/oracle/OraclePanel";
+import type { LocationId } from "@/game/world/locations";
+import { updateQuestProgress } from "@/features/game/quest";
+import { OracleSaveForm } from "@/features/oracle/OracleSaveForm";
+import { saveOracleReading } from "@/features/oracle/reading";
 import { SupportPanel } from "@/features/support/SupportPanel";
 import { SubscriptionForm } from "@/features/subscription/SubscriptionForm";
 import { useCart } from "@/features/cart/CartProvider";
@@ -13,15 +16,15 @@ import { getEncounterNode } from "./market";
 import { SidePanel } from "./SidePanel";
 import type { EncounterAction, EncounterContext, EncounterState } from "./types";
 
-function LegacyEncounter({ location, onClose, children }: { location: "oracle" | "camp" | "post"; onClose: () => void; children?: ReactNode }) {
+function LegacyEncounter({ location, onClose, children }: { location: "camp" | "post"; onClose: () => void; children?: ReactNode }) {
   const ref = useRef<HTMLElement>(null);
   useEffect(() => { ref.current?.focus(); }, []);
-  const title = location === "oracle" ? "The Oracle" : location === "camp" ? "Camp" : "Post Office";
+  const title = location === "camp" ? "Camp" : "Post Office";
   return (
     <section ref={ref} className="rpg-frame legacy-encounter" role="dialog" aria-modal="false" aria-label={title} tabIndex={-1}>
       <button type="button" className="rpg-btn" onClick={onClose}>Keep exploring</button>
       {children}
-      {location === "oracle" ? <OraclePanel /> : location === "camp" ? <SupportPanel /> : <SubscriptionForm />}
+      {location === "camp" ? <SupportPanel /> : <SubscriptionForm />}
     </section>
   );
 }
@@ -32,17 +35,26 @@ export function EncounterHost({
   onClose,
   opener,
   onCartUpdated = () => undefined,
+  onEmailSubmitted = () => undefined,
+  onGotoLocation = () => undefined,
 }: {
   state: EncounterState;
   onStateChange: (state: EncounterState) => void;
   onClose: () => void;
   opener: HTMLElement | null;
   onCartUpdated?: () => void;
+  onEmailSubmitted?: (email: string) => void;
+  onGotoLocation?: (location: LocationId) => void;
 }) {
   const { cart, store } = useCart();
   const closeRef = useRef(onClose);
 
   useEffect(() => { closeRef.current = onClose; }, [onClose]);
+  useEffect(() => {
+    if (state.location === "oracle" && state.nodeId === "oracle-reveal") {
+      updateQuestProgress((current) => ({ ...current, oracle: true }));
+    }
+  }, [state.location, state.nodeId]);
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -57,7 +69,7 @@ export function EncounterHost({
     };
   }, [opener]);
 
-  if (state.location && state.location !== "market" && state.location !== "bag") {
+  if (state.location === "camp" || state.location === "post") {
     return <LegacyEncounter location={state.location} onClose={onClose} />;
   }
 
@@ -72,6 +84,9 @@ export function EncounterHost({
   const commitAction = (action: EncounterAction) => {
     const result = applyEncounterAction(state, action);
     let nextState = result.state;
+    if (action.type === "oracle-realm" && state.deskMood) {
+      saveOracleReading({ mood: state.deskMood, realm: action.realm });
+    }
     if (result.effect?.type === "add-to-bag") {
       store.add(result.effect.productId ?? state.productId);
       onCartUpdated();
@@ -88,14 +103,31 @@ export function EncounterHost({
   };
 
   const onChoose = (choiceId: string) => {
+    const choice = node.choices.find((item) => item.id === choiceId);
+    if (
+      choice?.action?.type === "goto-location" &&
+      state.location === "market" &&
+      state.nodeId === "market-oracle-referral"
+    ) {
+      onGotoLocation(choice.action.location);
+      onClose();
+      return;
+    }
+    if (choice?.action) {
+      commitAction(choice.action);
+      return;
+    }
     const result = chooseEncounterOption(state, node, choiceId);
-    if (result.effect) commitAction(result.effect);
-    else onStateChange(result.state);
+    onStateChange(result.state);
   };
 
   return (
     <div className="encounter-layout">
-      <DialogueBox key={state.nodeId} node={node} onChoose={onChoose} />
+      <DialogueBox key={state.nodeId} node={node} onChoose={onChoose}>
+        {state.location === "oracle" && state.nodeId === "oracle-save" && state.deskMood && (
+          <OracleSaveForm mood={state.deskMood} onEmailSubmitted={onEmailSubmitted} />
+        )}
+      </DialogueBox>
       <SidePanel
         side={node.side ?? null}
         cart={cart}

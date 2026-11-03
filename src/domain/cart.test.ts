@@ -30,8 +30,15 @@ describe("cart domain", () => {
   });
 });
 
-it("offers a deterministic recommendation for every companion", () => {
+it("uses mood and realm for a deterministic recommendation", () => {
   expect([recommend("bold").productId, recommend("calm").productId, recommend("curious").productId]).toEqual(["ember", "moss", "bolt"]);
-  expect(recommend("calm")).toEqual(recommend("calm"));
-  expect(recommend("calm").explanation).toContain("calm");
+  expect(recommend("bold", "fantasy")).toEqual({
+    productId: "ember",
+    explanation: "You seek a bold desk, and Ember answers.",
+  });
+  expect(recommend("bold", "nature")).toEqual({
+    productId: "ember",
+    alternateId: "moss",
+    explanation: "You seek a bold desk, and Ember answers. The nature stars also whisper of Moss.",
+  });
 });

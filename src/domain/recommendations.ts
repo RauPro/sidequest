@@ -2,13 +2,27 @@ import type { ProductId } from "./catalog";
 
 export const moods = ["bold", "calm", "curious"] as const;
 export type DeskMood = (typeof moods)[number];
-export const recommendationRuleVersion = "1";
+export const visualStyles = ["fantasy", "nature", "technology"] as const;
+export type VisualStyle = (typeof visualStyles)[number];
+export const recommendationRuleVersion = "2";
 
-export function recommend(mood: DeskMood): { productId: ProductId; explanation: string } {
+export function recommend(
+  mood: DeskMood,
+  realm?: VisualStyle,
+): { productId: ProductId; alternateId?: ProductId; explanation: string } {
   const rules = {
-    bold: { productId: "ember", explanation: "You chose a bold desk mood. Ember brings a little fire." },
-    calm: { productId: "moss", explanation: "You chose a calm desk mood. Moss keeps things gentle." },
-    curious: { productId: "bolt", explanation: "You chose a curious desk mood. Bolt is ready to investigate." },
+    bold: "ember",
+    calm: "moss",
+    curious: "bolt",
   } as const;
-  return rules[mood];
+  const productId = rules[mood];
+  const realms = { fantasy: "ember", nature: "moss", technology: "bolt" } as const;
+  const alternateId = realm ? realms[realm] : undefined;
+  const alternate = alternateId && alternateId !== productId ? alternateId : undefined;
+  const name = (id: ProductId) => ({ ember: "Ember", moss: "Moss", bolt: "Bolt" })[id];
+  return {
+    productId,
+    ...(alternate ? { alternateId: alternate } : {}),
+    explanation: `You seek a ${mood} desk, and ${name(productId)} answers.${alternate ? ` The ${realm} stars also whisper of ${name(alternate)}.` : ""}`,
+  };
 }

@@ -1,5 +1,6 @@
 import type { ProductId } from "@/domain/catalog";
 import type { DemoOrder } from "@/domain/orders";
+import type { DeskMood, VisualStyle } from "@/domain/recommendations";
 import type { LocationId } from "@/game/world/locations";
 
 export type NpcId = "milo" | "oracle" | "finn" | "pip" | "bag";
@@ -14,10 +15,17 @@ export type EncounterContext = {
 export type EncounterAction =
   | { type: "add-to-bag"; productId?: ProductId }
   | { type: "browse-next" }
-  | { type: "browse-previous" }
+  | { type: "browse-prev" }
   | { type: "open-bag" }
   | { type: "checkout" }
   | { type: "close" }
+  | { type: "oracle-answer"; mood: DeskMood }
+  | { type: "oracle-realm"; realm: VisualStyle }
+  | { type: "oracle-show-alternate" }
+  | { type: "oracle-show-primary" }
+  | { type: "save-oracle" }
+  | { type: "oracle-back" }
+  | { type: "oracle-reset" }
   | { type: "goto-location"; location: LocationId };
 
 export type Choice = {
@@ -48,6 +56,10 @@ export type EncounterState = {
   nodeId: NodeId | null;
   productId: ProductId;
   receipt: DemoOrder | null;
+  deskMood: DeskMood | null;
+  visualStyle: VisualStyle | null;
+  recommendedProductId: ProductId | null;
+  alternateProductId: ProductId | null;
 };
 
 export type EncounterTransition = {

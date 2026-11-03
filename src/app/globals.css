@@ -165,6 +165,12 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
 .store-bag-panel { position: fixed; z-index: 80; inset: 70px 16px auto auto; }
 .store-bag-panel .side-panel { position: static; width: min(380px, calc(100vw - 32px)); max-height: calc(100vh - 88px); overflow-y: auto; }
 .game-image { image-rendering: pixelated; }
+.oracle-save-form { display: grid; gap: 8px; margin: 10px 0; max-width: 420px; }
+.oracle-save-form label { color: var(--gold); }
+.oracle-save-form input { min-height: 44px; padding: 8px 10px; border: 2px solid var(--gold-dim); background: var(--ink-2); color: var(--text); font: inherit; }
+.oracle-save-form input:focus-visible { outline: 3px solid var(--bolt); outline-offset: 2px; }
+.oracle-save-form button { justify-self: start; }
+.oracle-save-form [role="status"] { min-height: 1.4em; margin: 2px 0; color: var(--moss); }
 
 @media (max-width: 720px) {
   .store-main { padding: 70px 12px 32px; }
