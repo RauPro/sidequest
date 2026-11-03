@@ -3,6 +3,7 @@
 import { useRef, useState, type FormEvent } from "react";
 import type { DeskMood } from "@/domain/recommendations";
 import { maskEmail } from "@/features/klaviyo/identity";
+import { recordLedger, updateLedger } from "@/features/klaviyo/ledger";
 
 export function OracleSaveForm({
   mood,
@@ -27,6 +28,13 @@ export function OracleSaveForm({
     pending.current = true;
     setStatus("");
     onEmailSubmitted(submittedEmail);
+    const ledgerId = recordLedger({
+      channel: "server",
+      operation: "oracle-profile",
+      label: "Oracle profile save",
+      status: "sent",
+      detail: `Recipient ${maskEmail(submittedEmail)}`,
+    });
     try {
       const response = await fetch("/api/oracle/preferences", {
         method: "POST",
@@ -36,13 +44,16 @@ export function OracleSaveForm({
       const result = await response.json();
       if (!response.ok) throw new Error(result.message ?? "The Oracle could not save this reading.");
       if (result.status === "saved" && result.saved === true) {
+        updateLedger(ledgerId, { status: "sent", detail: `Reading saved to the Klaviyo profile for ${maskEmail(submittedEmail)}.` });
         setStatus("Your reading is written in the stars — saved to your Klaviyo profile.");
       } else if (result.status === "simulated") {
+        updateLedger(ledgerId, { status: "simulated", detail: "Demo mode; the reading was not saved to Klaviyo." });
         setStatus("Demo mode: the reading was checked but not saved anywhere.");
       } else {
         throw new Error("The Oracle could not verify this reading.");
       }
     } catch (error) {
+      updateLedger(ledgerId, { status: "failed", detail: "The Oracle could not confirm the profile save." });
       setStatus(error instanceof Error ? error.message : "The Oracle could not save this reading.");
     } finally {
       pending.current = false;

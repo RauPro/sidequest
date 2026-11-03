@@ -24,3 +24,32 @@ test("Oracle retains the selected choice and email after a failed save", async (
   await expect(page.getByText("Preference saving is unavailable.")).toBeVisible();
   await expect(page.getByLabel("Your email address", { exact: true })).toHaveValue("tester@example.com");
 });
+
+test("Oracle and bag actions appear in the Raven Ledger on village and store views", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("sidequest:identity:v1", "tester@example.com"));
+  await page.goto("/");
+  await expect(page.getByTestId("village-map")).toHaveAttribute("data-ready", "true");
+  await page.getByRole("button", { name: "Oracle", exact: true }).click();
+  await page.getByRole("button", { name: /Bold/ }).click();
+  await page.getByRole("button", { name: /Fantasy/ }).click();
+  await page.getByRole("button", { name: /Add Ember to bag/ }).click();
+  await page.getByRole("button", { name: /Ravens/ }).click();
+
+  const dialog = page.getByRole("dialog", { name: "Raven Ledger — messages sent to Klaviyo" });
+  await expect(dialog).toBeVisible();
+  const entries = dialog.getByTestId("ledger-entry");
+  await expect(entries.filter({ hasText: "Sidequest Product Viewed" })).toContainText("simulated");
+  await expect(entries.filter({ hasText: "Sidequest Bag Updated" })).toContainText("simulated");
+  await expect(dialog).toContainText("t•••@example.com");
+
+  await page.keyboard.press("Escape");
+  const ravensButton = page.getByRole("button", { name: /Ravens/ });
+  await expect(ravensButton).toBeFocused();
+  await page.keyboard.press("l");
+  await expect(dialog).toBeVisible();
+  await page.keyboard.press("Escape");
+
+  await page.goto("/shop");
+  await page.getByRole("button", { name: /Ravens/ }).click();
+  await expect(page.getByRole("dialog", { name: "Raven Ledger — messages sent to Klaviyo" })).toBeVisible();
+});

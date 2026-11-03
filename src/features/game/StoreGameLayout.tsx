@@ -8,6 +8,7 @@ import { SidePanel } from "@/features/encounters/SidePanel";
 import type { GameHudView } from "./GameHud";
 import { GameHud } from "./GameHud";
 import { trackBagUpdated, trackDemoCheckout } from "@/features/klaviyo/track";
+import { RavenLedgerPanel } from "@/features/klaviyo/RavenLedgerPanel";
 
 export function StoreGameLayout({
   children,
@@ -20,6 +21,8 @@ export function StoreGameLayout({
   const [bagOpen, setBagOpen] = useState(false);
   const [receipt, setReceipt] = useState<DemoOrder | null>(null);
   const [opener, setOpener] = useState<HTMLButtonElement | null>(null);
+  const [ledgerOpen, setLedgerOpen] = useState(false);
+  const [ledgerOpener, setLedgerOpener] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!bagOpen) return;
@@ -49,6 +52,12 @@ export function StoreGameLayout({
       trackBagUpdated(store.getSnapshot());
     }
   }
+  const openLedger = (button: HTMLElement | null) => {
+    setBagOpen(false);
+    setReceipt(null);
+    setLedgerOpener(button);
+    setLedgerOpen(true);
+  };
 
   return (
     <div className="store-game-shell">
@@ -57,6 +66,8 @@ export function StoreGameLayout({
         title="Market Hall"
         view={view}
         bagOpen={bagOpen}
+        ledgerOpen={ledgerOpen}
+        onOpenLedger={openLedger}
         onOpenBag={(event) => {
           if (bagOpen) {
             setBagOpen(false);
@@ -81,6 +92,7 @@ export function StoreGameLayout({
           />
         </div>
       )}
+      {ledgerOpen && <RavenLedgerPanel opener={ledgerOpener} onClose={() => setLedgerOpen(false)} />}
     </div>
   );
 }

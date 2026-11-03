@@ -3,7 +3,8 @@ import type { Cart } from "@/domain/cart";
 import type { DemoOrder } from "@/domain/orders";
 import type { DeskMood, VisualStyle } from "@/domain/recommendations";
 import type { LocationId } from "@/game/world/locations";
-import { getRememberedEmail } from "./identity";
+import { getRememberedEmail, maskEmail } from "./identity";
+import { recordLedger, updateLedger } from "./ledger";
 
 export type TrackProperties = {
   "Sidequest Location Visited": { location: LocationId };
@@ -19,7 +20,24 @@ const trackedKey = "sidequest:events:v1";
 
 export function trackEvent<E extends keyof TrackProperties>(event: E, properties: TrackProperties[E]) {
   const email = getRememberedEmail();
-  if (!email) return;
+  if (!email) {
+    recordLedger({
+      channel: "server",
+      operation: "event",
+      label: event,
+      status: "skipped",
+      detail: "No remembered email address is available.",
+    });
+    return;
+  }
+  const recipient = maskEmail(email);
+  const ledgerId = recordLedger({
+    channel: "server",
+    operation: "event",
+    label: event,
+    status: "sent",
+    detail: `Recipient ${recipient}`,
+  });
   try {
     const eventId = crypto.randomUUID();
     void fetch("/api/events", {
@@ -27,9 +45,22 @@ export function trackEvent<E extends keyof TrackProperties>(event: E, properties
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ event, eventId, email, properties }),
       keepalive: true,
-    }).catch(() => undefined);
+    }).then(async (response) => {
+      const result = await response.json().catch(() => null) as { status?: unknown } | null;
+      if (result?.status === "simulated") {
+        updateLedger(ledgerId, { status: "simulated", detail: `Simulated in demo mode. Recipient ${recipient}.` });
+      } else if (response.status === 202 && result?.status === "accepted") {
+        updateLedger(ledgerId, { status: "accepted", detail: `Klaviyo accepted the event request. Recipient ${recipient}.` });
+      } else if (!response.ok) {
+        updateLedger(ledgerId, { status: "failed", detail: `The event request was not accepted. Recipient ${recipient}.` });
+      } else {
+        updateLedger(ledgerId, { status: "sent", detail: `Request completed without a 202 acceptance response. Recipient ${recipient}.` });
+      }
+    }).catch(() => {
+      updateLedger(ledgerId, { status: "failed", detail: `The event request could not be confirmed. Recipient ${recipient}.` });
+    });
   } catch {
-    return;
+    updateLedger(ledgerId, { status: "failed", detail: `The event request could not be started. Recipient ${recipient}.` });
   }
 }
 
@@ -38,7 +69,6 @@ export function trackEventOnce<E extends keyof TrackProperties>(
   event: E,
   properties: TrackProperties[E],
 ) {
-  if (!getRememberedEmail()) return;
   try {
     if (window.sessionStorage.getItem(trackedKey)?.split("|").includes(key)) return;
     const current = window.sessionStorage.getItem(trackedKey)?.split("|").filter(Boolean) ?? [];

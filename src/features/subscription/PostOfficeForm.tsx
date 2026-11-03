@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { maskEmail } from "@/features/klaviyo/identity";
+import { recordLedger, updateLedger } from "@/features/klaviyo/ledger";
 
 export function PostOfficeForm({
   identityEmail,
@@ -44,6 +45,13 @@ export function PostOfficeForm({
     setMessage("");
     const value = submittedEmail.trim();
     onEmailSubmitted(value);
+    const ledgerId = recordLedger({
+      channel: "server",
+      operation: "subscribe",
+      label: "Newsletter subscription request",
+      status: "sent",
+      detail: `Recipient ${maskEmail(value)}`,
+    });
     try {
       const response = await fetch("/api/subscribe", {
         method: "POST",
@@ -54,8 +62,10 @@ export function PostOfficeForm({
       if (!response.ok && result.error === "provider_outcome_unknown") setSubmitted(true);
       if (!response.ok) throw new Error(typeof result.message === "string" ? result.message : "Please try again.");
       if (result.status === "simulated") {
+        updateLedger(ledgerId, { status: "simulated", detail: "Demo mode; no subscription was created." });
         setMessage("Demo request validated. No subscription was created and no email was sent.");
-      } else if (result.status === "accepted" && result.operation === "subscribe") {
+      } else if (response.status === 202 && result.status === "accepted" && result.operation === "subscribe") {
+        updateLedger(ledgerId, { status: "accepted", detail: "Klaviyo accepted the subscription request; confirmation may still be required." });
         setSubmitted(true);
         setMessage(result.confirmationRequired === true
           ? "Your request was accepted. Check your inbox to confirm your subscription if you haven’t already."
@@ -64,6 +74,7 @@ export function PostOfficeForm({
         throw new Error("The server returned an unexpected status.");
       }
     } catch (error) {
+      updateLedger(ledgerId, { status: "failed", detail: "The subscription request could not be confirmed." });
       setMessage(error instanceof Error ? error.message : "The request could not be completed.");
     } finally {
       submitting.current = false;

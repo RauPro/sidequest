@@ -16,6 +16,7 @@ import { QuestCard } from "./QuestCard";
 import { readOracleReading } from "@/features/oracle/reading";
 import { useIdentity } from "@/features/klaviyo/useIdentity";
 import { trackEventOnce } from "@/features/klaviyo/track";
+import { RavenLedgerPanel } from "@/features/klaviyo/RavenLedgerPanel";
 import {
   updateQuestProgress,
   useQuestProgress,
@@ -54,6 +55,8 @@ export function GameShell() {
   const [slow, setSlow] = useState(false);
   const [hintOverride, setHintOverride] = useState<string | null>(null);
   const [opener, setOpener] = useState<HTMLElement | null>(null);
+  const [ledgerOpen, setLedgerOpen] = useState(false);
+  const [ledgerOpener, setLedgerOpener] = useState<HTMLElement | null>(null);
   const deepLinkHandled = useRef(false);
   const locationOpener = useRef<LocationId | null>(null);
   const quest = useQuestProgress();
@@ -109,7 +112,7 @@ export function GameShell() {
     if (e.type === "hover") { setHover(e.id); if (e.id) setHintOverride(null); }
     if (e.type === "player-tile") { setTile({ col: e.col, row: e.row }); setHintOverride(null); }
   }), [bridge]);
-  useEffect(() => { bridge.dispatch({ type: "input", enabled: panel === null }); }, [bridge, panel]);
+  useEffect(() => { bridge.dispatch({ type: "input", enabled: panel === null && !ledgerOpen }); }, [bridge, panel, ledgerOpen]);
   useEffect(() => {
     if (panel !== null || !locationOpener.current) return;
     const location = locationOpener.current;
@@ -158,11 +161,15 @@ export function GameShell() {
     bridge.dispatch({ type: "highlight", id });
     setHintOverride(`Follow the glow to the ${target.name}`);
   };
+  const openLedger = (button: HTMLElement | null) => {
+    setLedgerOpener(button);
+    setLedgerOpen(true);
+  };
 
   return <main id="main" className="game-shell" data-testid="village-map" data-ready={ready ? "true" : undefined} data-encounter-open={panel ? "true" : undefined} data-player-tile={tile ? `${tile.col},${tile.row}` : undefined}>
     <h1 className="visually-hidden">Willow Market</h1>
     <PhaserHost bridge={bridge} />
-    <GameHud title="Willow Market" view="village" onOpenBag={(event) => openEncounter("bag")(event)} bagOpen={panel === "bag"} />
+    <GameHud title="Willow Market" view="village" onOpenBag={(event) => openEncounter("bag")(event)} onOpenLedger={openLedger} bagOpen={panel === "bag"} ledgerOpen={ledgerOpen} />
     {!ready && <p className="game-loader" role="status">Loading village…{slow && <> The map is taking a while. Use the places menu or <Link href="/shop">open Shop view</Link>.</>}</p>}
     <QuestCard progress={quest} />
     {!panel && <nav className="places-menu rpg-frame" aria-label="Village places">{locations.map((l) =>
@@ -187,9 +194,10 @@ export function GameShell() {
     </nav>}
     <p className="hint-bar rpg-frame" aria-live="polite" aria-atomic="true" hidden={!hint}>{hint}</p>
     <aside className="rpg-frame controls-bar" aria-label="Game controls">
-      <span className="controls-keyboard"><kbd>WASD/↑↓←→</kbd> Move <kbd>E</kbd> Interact <kbd>B</kbd> Bag <kbd>Esc</kbd> Close</span>
+      <span className="controls-keyboard"><kbd>WASD/↑↓←→</kbd> Move <kbd>E</kbd> Interact <kbd>B</kbd> Bag <kbd>L</kbd> Ravens <kbd>Esc</kbd> Close</span>
       <span className="controls-touch">Tap a path to move · Tap a place to visit</span>
     </aside>
     {panel && <EncounterHost state={encounter} onStateChange={setEncounter} onClose={() => setEncounter(emptyEncounter)} opener={opener} onGotoLocation={pointToLocation} identityEmail={identity.email} onEmailSubmitted={identity.remember} onForgetIdentity={identity.forget} />}
+    {ledgerOpen && <RavenLedgerPanel opener={ledgerOpener} onClose={() => setLedgerOpen(false)} />}
   </main>;
 }

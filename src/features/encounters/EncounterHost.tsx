@@ -17,6 +17,8 @@ import { SidePanel } from "./SidePanel";
 import type { EncounterAction, EncounterContext, EncounterState } from "./types";
 import type { CampTopic } from "@/domain/campGuide";
 import { trackBagUpdated, trackDemoCheckout, trackEvent, trackEventOnce } from "@/features/klaviyo/track";
+import { maskEmail } from "@/features/klaviyo/identity";
+import { recordLedger, updateLedger } from "@/features/klaviyo/ledger";
 
 export function EncounterHost({
   state,
@@ -86,6 +88,14 @@ export function EncounterHost({
     const messages = [...campMessages, { role: "user" as const, content }].slice(-20);
     setCampMessages(messages);
     setCampPending(true);
+    const recipient = email ?? identityEmail;
+    const ledgerId = recordLedger({
+      channel: "server",
+      operation: "camp",
+      label: "Camp chat request",
+      status: "sent",
+      ...(recipient ? { detail: `Recipient ${maskEmail(recipient)}` } : {}),
+    });
     try {
       const response = await fetch("/api/camp/chat", {
         method: "POST",
@@ -98,6 +108,13 @@ export function EncounterHost({
       });
       const result = await response.json();
       if (!response.ok) throw new Error(typeof result.message === "string" ? result.message : "Finn could not answer right now.");
+      if (result.status === "simulated") {
+        updateLedger(ledgerId, { status: "simulated", detail: "Finn answered in demo mode." });
+      } else if (response.status === 202 && result.status === "accepted") {
+        updateLedger(ledgerId, { status: "accepted", detail: "Klaviyo accepted the request." });
+      } else {
+        updateLedger(ledgerId, { status: "sent", detail: "Finn replied to the live chat request." });
+      }
       if (result.conversationId) setCampConversationId(result.conversationId);
       if (result.followUp === true) setCampFollowUp(true);
       const replies: { role: "agent"; content: string }[] = [];
@@ -130,6 +147,7 @@ export function EncounterHost({
       setCampMessages([...messages, ...replies].slice(-20));
       if (nextNode) onStateChange({ ...state, nodeId: nextNode, campReply: productReply });
     } catch (error) {
+      updateLedger(ledgerId, { status: "failed", detail: "Finn could not confirm the chat request." });
       const text = error instanceof Error ? error.message : "Finn could not answer right now.";
       setCampMessages([...messages, { role: "agent" as const, content: text }].slice(-20));
     } finally {
