@@ -8,6 +8,8 @@ An explorable pixel-art storefront showcasing Klaviyo across the customer journe
 
 ## Reviewer quick tour (2 min)
 
+For a presentation, use the [pitch and demo guide](docs/SIDEQUEST-PITCH.md), including the Klaviyo walkthrough, customer scenario, and technical Q&A.
+
 1. Visit the Oracle.
 2. Add the companion to your bag.
 3. Press **L** to open the Raven Ledger and see each Klaviyo call.
