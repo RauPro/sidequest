@@ -3,12 +3,13 @@ import { z } from "zod";
 import { guards, jsonRoute } from "./http";
 import { rateLimit } from "./rateLimit";
 
-function request(ip?: string) {
+function request(ip?: string, realIp?: string) {
   return new Request("https://sidequest.example/api/test", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       ...(ip ? { "x-forwarded-for": ip } : {}),
+      ...(realIp ? { "x-real-ip": realIp } : {}),
     },
     body: "{}",
   });
@@ -30,7 +31,7 @@ describe("best-effort fixed-window rate limits", () => {
     await expect(guard(request("192.0.2.1"))).resolves.toBeUndefined();
   });
 
-  it("keys windows by route and the first forwarded IP", async () => {
+  it("keys windows by route and the first forwarded IP when the real IP is absent", async () => {
     const firstRoute = rateLimit("/test/route-a", 1, 60_000);
     const secondRoute = rateLimit("/test/route-b", 1, 60_000);
 
@@ -39,6 +40,14 @@ describe("best-effort fixed-window rate limits", () => {
     await expect(firstRoute(request("198.51.100.9"))).resolves.toBeUndefined();
     await expect(secondRoute(request("192.0.2.1"))).resolves.toBeUndefined();
     await expect(rateLimit("/test/unknown", 1, 60_000)(request())).resolves.toBeUndefined();
+  });
+
+  it("prefers x-real-ip over a different forwarded-for value", async () => {
+    const guard = rateLimit("/test/real-ip-precedence", 1, 60_000);
+
+    await guard(request("192.0.2.1", "198.51.100.1"));
+    await expect(guard(request("192.0.2.2", "198.51.100.1"))).rejects.toMatchObject({ status: 429 });
+    await expect(guard(request("192.0.2.1", "198.51.100.2"))).resolves.toBeUndefined();
   });
 
   it("returns 429 and Retry-After through jsonRoute", async () => {

@@ -7,6 +7,7 @@ type Guard = (request: Request) => Promise<void>;
 const windows = new Map<string, Window>();
 
 // This per-instance limiter is best-effort and is not durable across instances or restarts.
+// It trusts Vercel's edge to set or overwrite x-real-ip and x-forwarded-for.
 export function rateLimit(route: string, limit: number, windowMs: number): Guard {
   if (!Number.isInteger(limit) || limit < 1 || !Number.isFinite(windowMs) || windowMs <= 0) {
     throw new Error("Rate limit must have a positive integer limit and window.");
@@ -18,8 +19,9 @@ export function rateLimit(route: string, limit: number, windowMs: number): Guard
       if (window.expiresAt <= now) windows.delete(key);
     }
 
+    const realIp = request.headers.get("x-real-ip")?.trim();
     const forwardedFor = request.headers.get("x-forwarded-for");
-    const ip = forwardedFor?.split(",")[0]?.trim() || "unknown";
+    const ip = realIp || forwardedFor?.split(",")[0]?.trim() || "unknown";
     const key = `${route}:${ip}`;
     const current = windows.get(key);
 
