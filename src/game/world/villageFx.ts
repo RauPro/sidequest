@@ -13,7 +13,7 @@ export type SwayRegion = {
   amplitude: number;
   polygon: WalkPolygon;
 };
-export type OccluderRegion = { id: string; polygon: WalkPolygon };
+export type OccluderRegion = { id: string; polygon: WalkPolygon; mask?: "foliage" };
 export type FxLight = {
   x: number;
   y: number;

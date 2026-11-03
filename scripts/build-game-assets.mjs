@@ -257,8 +257,12 @@ for (const region of fx.sway) {
 
 for (const occluder of fx.occluders) {
   const box = bounds(occluder.polygon);
-  await writeStrip(`occluder-${occluder.id}`, box, 1, (x, y) =>
-    inside(x + 0.5, y + 0.5, occluder.polygon) ? pixel(x, y) : null);
+  await writeStrip(`occluder-${occluder.id}`, box, 1, (x, y) => {
+    if (!inside(x + 0.5, y + 0.5, occluder.polygon)) return null;
+    const rgb = pixel(x, y);
+    if (occluder.mask === "foliage" && !isFoliage(rgb)) return null;
+    return rgb;
+  });
 }
 
 console.log("Built village background, player, NPC, FX, product, and portrait assets.");
