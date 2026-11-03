@@ -63,6 +63,6 @@ export class Player {
       this.sprite.stop();
       this.sprite.setFrame(facingRows[this.facing] * 4);
     }
-    this.sprite.setPosition(this.pos.x, this.pos.y).setDepth(1);
+    this.sprite.setPosition(this.pos.x, this.pos.y).setDepth(this.pos.y);
   }
 }

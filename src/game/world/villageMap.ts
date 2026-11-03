@@ -31,7 +31,7 @@ function onPolygonEdge(x: number, y: number, [ax, ay]: readonly [number, number]
     && y >= Math.min(ay, by) - 1e-7 && y <= Math.max(ay, by) + 1e-7;
 }
 
-function containsPoint(x: number, y: number, polygon: WalkPolygon): boolean {
+export function containsPoint(x: number, y: number, polygon: WalkPolygon): boolean {
   let inside = false;
   for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
     const [xi, yi] = polygon[i];
