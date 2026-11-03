@@ -81,11 +81,11 @@ test("the visitor walks with keys, enters places with E and tap-moves", async ({
   await page.goto("/");
   const map = page.getByTestId("village-map");
   await expect(map).toHaveAttribute("data-ready", "true");
-  await expect(map).toHaveAttribute("data-player-tile", "18,11");
+  await expect(map).toHaveAttribute("data-player-tile", "18,14");
 
-  await page.keyboard.down("ArrowLeft");
+  await page.keyboard.down("ArrowRight");
   await expect(page.locator(".hint-bar")).toContainText("enter the Market", { timeout: 5000 });
-  await page.keyboard.up("ArrowLeft");
+  await page.keyboard.up("ArrowRight");
   await page.keyboard.press("e");
   await expect(page.getByRole("button", { name: "Add Ember", exact: true })).toBeVisible();
   await page.keyboard.press("Escape");
@@ -96,14 +96,17 @@ test("the visitor walks with keys, enters places with E and tap-moves", async ({
   const tileAttr = await map.getAttribute("data-player-tile");
   const [col, row] = tileAttr!.split(",").map(Number);
   expect(isWalkableKind(tileAt(col, row))).toBe(true);
-  expect(col).toBeLessThanOrEqual(20);
+  expect(col).toBeLessThanOrEqual(25);
 
   const view = page.viewportSize()!;
   const zoom = cameraZoom(view.width, view.height);
   const [pc, pr] = tileAttr!.split(",").map(Number);
-  const center = cameraCenter(view.width, view.height, zoom, { x: pc * TILE_SIZE + TILE_SIZE / 2, y: (pr + 1) * TILE_SIZE - 12 });
-  // (12,15) is off-screen on narrow views; tap the nearest on-screen plaza tile.
-  const candidates = [[12, 15], [14, 14], [15, 12], [16, 12], [17, 13], [19, 11]];
+  const center = cameraCenter(view.width, view.height, zoom, {
+    x: pc * TILE_SIZE + TILE_SIZE / 2,
+    y: (pr + 1) * TILE_SIZE - 12,
+  });
+  // The northern edge of the plaza is visible on both desktop and mobile.
+  const candidates = [[24, 14]];
   let target: number[] | undefined;
   let pt = { x: 0, y: 0 };
   for (const [c, r] of candidates) {

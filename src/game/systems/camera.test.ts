@@ -5,14 +5,11 @@ import { cameraCenter, cameraZoom, worldToScreen } from "./camera";
 const viewports = [[1280, 720], [1920, 1080], [1586, 992], [412, 915], [375, 667], [915, 412]] as const;
 
 describe("camera math", () => {
-  it.each(viewports)("zoom at %ix%i shows the whole world or crops at 2-3x", (w, h) => {
-    const fit = Math.min(w / WORLD_WIDTH, h / WORLD_HEIGHT);
-    const zoom = cameraZoom(w, h);
-    if (fit >= 1.5) expect(zoom).toBeCloseTo(fit, 6);
-    else {
-      expect(zoom).toBeGreaterThanOrEqual(2);
-      expect(zoom).toBeLessThanOrEqual(3);
-    }
+  it.each(viewports)("covers the viewport at %ix%i", (w, h) => {
+    const expected = Math.max(w / WORLD_WIDTH, h / WORLD_HEIGHT);
+    expect(cameraZoom(w, h)).toBeCloseTo(expected, 6);
+    expect(WORLD_WIDTH * cameraZoom(w, h)).toBeGreaterThanOrEqual(w);
+    expect(WORLD_HEIGHT * cameraZoom(w, h)).toBeGreaterThanOrEqual(h);
   });
   it.each(viewports)("clamps the centre inside the world and centres oversized views at %ix%i", (w, h) => {
     const zoom = cameraZoom(w, h);

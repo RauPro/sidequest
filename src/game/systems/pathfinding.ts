@@ -1,9 +1,7 @@
-import { isWalkableKind, tileAt, type TilePoint, type WorldRect } from "../world/villageMap";
+import { isWalkableKind, tileAt, type TilePoint } from "../world/villageMap";
 
-export function tileWalkable(col: number, row: number, obstacles: readonly WorldRect[]): boolean {
-  if (!isWalkableKind(tileAt(col, row))) return false;
-  const central = { x: col * 16 + 4, y: row * 16 + 4, width: 8, height: 8 };
-  return !obstacles.some((o) => central.x < o.x + o.width && o.x < central.x + central.width && central.y < o.y + o.height && o.y < central.y + central.height);
+export function tileWalkable(col: number, row: number): boolean {
+  return isWalkableKind(tileAt(col, row));
 }
 
 const key = (c: number, r: number) => `${c},${r}`;

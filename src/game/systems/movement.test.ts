@@ -1,41 +1,37 @@
 import { describe, expect, it } from "vitest";
-import { decorObstacles } from "../world/decor";
+import { TILE_SIZE, isWalkableKind, tileAt } from "../world/villageMap";
 import { footRect, isBlocked, stepMovement } from "./movement";
 
-const spawn = { x: 296, y: 190 };
+const spawn = { x: 590, y: 480 };
 const run = (dir: { x: number; y: number }, seconds: number) => {
   let p = spawn;
-  for (let i = 0; i < seconds * 60; i++) p = stepMovement(p, dir, 1000 / 60, []);
+  for (let i = 0; i < seconds * 60; i++) p = stepMovement(p, dir, 1000 / 60);
   return p;
 };
 
 describe("stepMovement", () => {
   it("gives the diagonal step the same length as a straight step", () => {
-    const straight = stepMovement(spawn, { x: 1, y: 0 }, 100, []);
-    const diagonal = stepMovement(spawn, { x: 1, y: 1 }, 100, []);
+    const straight = stepMovement(spawn, { x: 1, y: 0 }, 100);
+    const diagonal = stepMovement(spawn, { x: 1, y: 1 }, 100);
     expect(Math.hypot(diagonal.x - spawn.x, diagonal.y - spawn.y)).toBeCloseTo(straight.x - spawn.x, 5);
   });
-  it("blocks water, forest, building, prop and leaving the world", () => {
-    expect(isBlocked(footRect({ x: 352, y: 200 }), [])).toBe(true); // river tile (22,12)
-    expect(isBlocked(footRect({ x: 8, y: 30 }), [])).toBe(true); // forest
-    expect(isBlocked(footRect({ x: 240, y: 80 }), [])).toBe(true); // market building
-    expect(isBlocked(footRect({ x: 280, y: 176 }), [])).toBe(true); // merchant prop tile
-    expect(isBlocked(footRect({ x: 4, y: 390 }), [])).toBe(true);
-    expect(isBlocked(footRect(spawn), [])).toBe(false);
+  it("blocks polygon-masked tiles and movement outside the world", () => {
+    expect(isBlocked(footRect({ x: 16, y: 16 }))).toBe(true);
+    expect(isBlocked(footRect({ x: 656, y: 368 }))).toBe(true);
+    expect(isBlocked(footRect({ x: 1168, y: 816 }))).toBe(true);
+    expect(isBlocked({ x: -1, y: 0, width: 2, height: 2 })).toBe(true);
+    expect(isBlocked(footRect(spawn))).toBe(false);
   });
-  it("slides along a wall when only one axis is blocked", () => {
-    const riverBank = { x: 331, y: 190 };
-    const p = stepMovement(riverBank, { x: 1, y: -1 }, 100, []);
-    expect(p.x).toBe(riverBank.x);
-    expect(p.y).toBeLessThan(riverBank.y);
+  it("slides along a blocked polygon boundary when one axis remains walkable", () => {
+    const plazaEdge = { x: 24 * TILE_SIZE + 24, y: 14 * TILE_SIZE + 16 };
+    const p = stepMovement(plazaEdge, { x: 1, y: -1 }, 100);
+    expect(p.x).toBe(plazaEdge.x);
+    expect(p.y).toBeLessThan(plazaEdge.y);
+    expect(isWalkableKind(tileAt(Math.floor(p.x / TILE_SIZE), Math.floor(p.y / TILE_SIZE)))).toBe(true);
   });
-  it("blocks decor obstacles", () => {
-    expect(isBlocked(footRect({ x: 162, y: 162 }), decorObstacles())).toBe(true);
-    expect(stepMovement({ x: 154, y: 163 }, { x: 1, y: 0 }, 100, decorObstacles()).x).toBe(154);
-  });
-  it("stops before the river when walking right from the spawn for 3s", () => {
+  it("stops at the edge of the plaza walk polygon", () => {
     const p = run({ x: 1, y: 0 }, 3);
-    expect(Math.floor(p.x / 16)).toBeLessThanOrEqual(20);
-    expect(p.x).toBeLessThan(336);
+    expect(isWalkableKind(tileAt(Math.floor(p.x / TILE_SIZE), Math.floor((p.y - 1) / TILE_SIZE)))).toBe(true);
+    expect(p.x).toBeLessThan(832);
   });
 });

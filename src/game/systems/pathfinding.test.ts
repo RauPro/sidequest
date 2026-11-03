@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { decorObstacles } from "../world/decor";
 import { locations } from "../world/locations";
-import { isWalkableKind, tileAt } from "../world/villageMap";
+import { TILE_SIZE, isWalkableKind, tileAt, visitorSpawn } from "../world/villageMap";
 import { findPath, nearestReachable, tileWalkable } from "./pathfinding";
 
-const obstacles = decorObstacles();
-const walkable = (c: number, r: number) => tileWalkable(c, r, obstacles);
-const spawn = { col: 18, row: 11 };
+const walkable = (c: number, r: number) => tileWalkable(c, r);
+const spawn = {
+  col: Math.floor(visitorSpawn.x / TILE_SIZE),
+  row: Math.floor(visitorSpawn.y / TILE_SIZE),
+};
 
 describe("pathfinding", () => {
   it("finds corner-safe walkable paths from the spawn to every entrance", () => {
@@ -25,16 +26,16 @@ describe("pathfinding", () => {
       }
     }
   });
-  it("snaps a water target to a reachable bank tile", () => {
-    const water = { col: 22, row: 12 };
-    expect(isWalkableKind(tileAt(water.col, water.row))).toBe(false);
-    const snapped = nearestReachable(spawn, water, walkable);
+  it("snaps a blocked target to the nearest reachable walk tile", () => {
+    const blocked = { col: 0, row: 0 };
+    expect(isWalkableKind(tileAt(blocked.col, blocked.row))).toBe(false);
+    const snapped = nearestReachable(spawn, blocked, walkable);
     expect(snapped).not.toBeNull();
     expect(walkable(snapped!.col, snapped!.row)).toBe(true);
     expect(findPath(spawn, snapped!, walkable)).not.toBeNull();
   });
   it("is deterministic", () => {
     expect(findPath(spawn, locations[0].entrance, walkable)).toEqual(findPath(spawn, locations[0].entrance, walkable));
-    expect(nearestReachable(spawn, { col: 22, row: 12 }, walkable)).toEqual(nearestReachable(spawn, { col: 22, row: 12 }, walkable));
+    expect(nearestReachable(spawn, { col: 0, row: 0 }, walkable)).toEqual(nearestReachable(spawn, { col: 0, row: 0 }, walkable));
   });
 });

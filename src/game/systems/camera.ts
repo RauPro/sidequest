@@ -1,8 +1,7 @@
 import { WORLD_HEIGHT, WORLD_WIDTH, type WorldPoint } from "../world/villageMap";
 
 export function cameraZoom(viewW: number, viewH: number): number {
-  const fit = Math.min(viewW / WORLD_WIDTH, viewH / WORLD_HEIGHT);
-  return fit >= 1.5 ? fit : Math.max(2, Math.min(viewH / WORLD_HEIGHT, 3));
+  return Math.max(viewW / WORLD_WIDTH, viewH / WORLD_HEIGHT);
 }
 
 // View centre follows `focus`, clamped inside the world; centred on any axis
