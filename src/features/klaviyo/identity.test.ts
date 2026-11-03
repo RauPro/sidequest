@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { anonymousIdKey, captureKlaviyoIdentity, getKlaviyoIdentifiers, klaviyoKeyKey } from "./identity";
+import { anonymousIdKey, captureKlaviyoIdentity, forgetEmail, getKlaviyoIdentifiers, klaviyoKeyKey } from "./identity";
 
 function createStorage(initial: Record<string, string> = {}) {
   const values = new Map(Object.entries(initial));
@@ -44,5 +44,31 @@ describe("Klaviyo client identity", () => {
     expect(localStorage.getItem(klaviyoKeyKey)).toBe("mail-token");
     expect(history.replaceState).toHaveBeenCalledWith(history.state, "", "/products/ember?source=shop&keep=1#details");
     expect(new URL(location.href).searchParams.has("_kx")).toBe(false);
+  });
+
+  it("forgets the email, _kx, and anonymous identifier", () => {
+    const localStorage = createStorage();
+    const location = { href: "https://sidequest.test/" };
+    const history = { replaceState: vi.fn() };
+    vi.stubGlobal("window", { localStorage, location, history, dispatchEvent: vi.fn() });
+
+    forgetEmail();
+    localStorage.setItem("sidequest:identity:v1", "visitor@example.com");
+    localStorage.setItem(klaviyoKeyKey, "link-token");
+    localStorage.setItem(anonymousIdKey, "anonymous-before-forget");
+
+    const before = getKlaviyoIdentifiers();
+    expect(before).toMatchObject({ email: "visitor@example.com", _kx: "link-token", anonymous_id: "anonymous-before-forget" });
+
+    forgetEmail();
+    expect(localStorage.getItem("sidequest:identity:v1")).toBeNull();
+    expect(localStorage.getItem(klaviyoKeyKey)).toBeNull();
+    expect(localStorage.getItem(anonymousIdKey)).toBeNull();
+    const after = getKlaviyoIdentifiers();
+
+    expect(after).not.toHaveProperty("email");
+    expect(after).not.toHaveProperty("_kx");
+    expect(after.anonymous_id).not.toBe(before.anonymous_id);
+    expect(localStorage.getItem(anonymousIdKey)).toBe(after.anonymous_id);
   });
 });

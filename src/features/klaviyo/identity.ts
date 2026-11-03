@@ -106,12 +106,15 @@ export function rememberEmail(email: string): string | null {
 
 export function forgetEmail() {
   if (typeof window === "undefined") return;
+  memoryAnonymousId = null;
   try {
     window.localStorage.removeItem(identityKey);
-    window.dispatchEvent(new Event("sidequest:identity"));
+    window.localStorage.removeItem(klaviyoKeyKey);
+    window.localStorage.removeItem(anonymousIdKey);
   } catch {
-    return;
+    // Identity storage is optional.
   }
+  window.dispatchEvent(new Event("sidequest:identity"));
 }
 
 export function maskEmail(email: string): string {
