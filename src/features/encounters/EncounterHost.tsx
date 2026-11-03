@@ -16,14 +16,16 @@ import { getEncounterNode } from "./market";
 import { SidePanel } from "./SidePanel";
 import type { EncounterAction, EncounterContext, EncounterState } from "./types";
 import type { CampTopic } from "@/domain/campGuide";
-import { trackBagUpdated, trackDemoCheckout, trackEvent, trackEventOnce } from "@/features/klaviyo/track";
+import { trackAddedToCart, trackDemoCheckout, trackEvent, trackEventOnce, trackStartedCheckout } from "@/features/klaviyo/track";
+import { isSoldOut } from "@/domain/inventory";
+import { maskEmail } from "@/features/klaviyo/identity";
+import { recordLedger, updateLedger } from "@/features/klaviyo/ledger";
 
 export function EncounterHost({
   state,
   onStateChange,
   onClose,
   opener,
-  onCartUpdated = () => undefined,
   onEmailSubmitted = () => undefined,
   identityEmail = null,
   onForgetIdentity = () => undefined,
@@ -33,7 +35,6 @@ export function EncounterHost({
   onStateChange: (state: EncounterState) => void;
   onClose: () => void;
   opener: HTMLElement | null;
-  onCartUpdated?: () => void;
   onEmailSubmitted?: (email: string) => void;
   identityEmail?: string | null;
   onForgetIdentity?: () => void;
@@ -86,6 +87,14 @@ export function EncounterHost({
     const messages = [...campMessages, { role: "user" as const, content }].slice(-20);
     setCampMessages(messages);
     setCampPending(true);
+    const recipient = email ?? identityEmail;
+    const ledgerId = recordLedger({
+      channel: "server",
+      operation: "camp",
+      label: "Camp chat request",
+      status: "sent",
+      ...(recipient ? { detail: `Recipient ${maskEmail(recipient)}` } : {}),
+    });
     try {
       const response = await fetch("/api/camp/chat", {
         method: "POST",
@@ -98,6 +107,13 @@ export function EncounterHost({
       });
       const result = await response.json();
       if (!response.ok) throw new Error(typeof result.message === "string" ? result.message : "Finn could not answer right now.");
+      if (result.status === "simulated") {
+        updateLedger(ledgerId, { status: "simulated", detail: "Finn answered in demo mode." });
+      } else if (response.status === 202 && result.status === "accepted") {
+        updateLedger(ledgerId, { status: "accepted", detail: "Klaviyo accepted the request." });
+      } else {
+        updateLedger(ledgerId, { status: "sent", detail: "Finn replied to the live chat request." });
+      }
       if (result.conversationId) setCampConversationId(result.conversationId);
       if (result.followUp === true) setCampFollowUp(true);
       const replies: { role: "agent"; content: string }[] = [];
@@ -130,6 +146,7 @@ export function EncounterHost({
       setCampMessages([...messages, ...replies].slice(-20));
       if (nextNode) onStateChange({ ...state, nodeId: nextNode, campReply: productReply });
     } catch (error) {
+      updateLedger(ledgerId, { status: "failed", detail: "Finn could not confirm the chat request." });
       const text = error instanceof Error ? error.message : "Finn could not answer right now.";
       setCampMessages([...messages, { role: "agent" as const, content: text }].slice(-20));
     } finally {
@@ -140,6 +157,14 @@ export function EncounterHost({
   const commitAction = (action: EncounterAction) => {
     const result = applyEncounterAction(state, action);
     let nextState = result.state;
+    if (action.type === "visit-product") {
+      trackEventOnce("location:market", "Sidequest Location Visited", { location: "market" });
+      trackEventOnce(`product:market:${action.productId}`, "Sidequest Product Viewed", {
+        productId: action.productId,
+        discoverySource: "market",
+      });
+      updateQuestProgress((current) => ({ ...current, market: true }));
+    }
     if (action.type === "oracle-realm" && state.deskMood) {
       saveOracleReading({ mood: state.deskMood, realm: action.realm });
       if (result.state.recommendedProductId) {
@@ -168,18 +193,20 @@ export function EncounterHost({
       });
     }
     if (result.effect?.type === "add-to-bag") {
-      store.add(result.effect.productId ?? state.productId);
-      trackBagUpdated(store.getSnapshot());
-      onCartUpdated();
+      const productId = result.effect.productId ?? state.productId;
+      if (isSoldOut(productId)) return;
+      const previousCart = store.getSnapshot();
+      store.add(productId);
+      trackAddedToCart(previousCart, store.getSnapshot(), productId);
     }
     if (result.effect?.type === "checkout") {
       const snapshot = store.getSnapshot();
       if (cartCount(snapshot) === 0) return;
+      const checkoutId = crypto.randomUUID();
+      trackStartedCheckout(snapshot, checkoutId);
       const order = createDemoOrder(snapshot, crypto.randomUUID());
       trackDemoCheckout(order);
       store.clear();
-      trackBagUpdated(store.getSnapshot());
-      onCartUpdated();
       nextState = { ...nextState, receipt: order };
     }
     onStateChange(nextState);
@@ -187,6 +214,7 @@ export function EncounterHost({
 
   const onChoose = (choiceId: string) => {
     const choice = node.choices.find((item) => item.id === choiceId);
+    if (choice?.action?.type === "add-to-bag" && isSoldOut(choice.action.productId ?? state.productId)) return;
     if (choice?.action?.type === "send-chat" && state.location === "camp") {
       if (!campPending) submitCampTurn(choice.action.content, choice.action.topic);
       return;
@@ -265,11 +293,19 @@ export function EncounterHost({
 
   return (
     <div className="encounter-layout">
-      <DialogueBox key={state.nodeId} node={dialogueNode} speakerOverride={speakerOverride} onChoose={onChoose}>
+      <DialogueBox
+        key={state.nodeId}
+        node={dialogueNode}
+        speakerOverride={speakerOverride}
+        onChoose={onChoose}
+        disabledChoiceIds={dialogueNode.choices
+          .filter((choice) => choice.action?.type === "add-to-bag" && isSoldOut(choice.action.productId ?? state.productId))
+          .map((choice) => choice.id)}
+      >
         {state.location === "oracle" && state.nodeId === "oracle-save" && state.deskMood && (
           <OracleSaveForm mood={state.deskMood} onEmailSubmitted={onEmailSubmitted} identityEmail={identityEmail} onForgetIdentity={onForgetIdentity} />
         )}
-        {state.location === "post" && (
+        {state.location === "post" && state.nodeId === "post-start" && (
           <PostOfficeForm onEmailSubmitted={onEmailSubmitted} identityEmail={identityEmail} onForgetIdentity={onForgetIdentity} />
         )}
         {state.location === "camp" && (
@@ -301,7 +337,6 @@ export function EncounterHost({
         store={store}
         receipt={state.receipt}
         onAction={commitAction}
-        onCartUpdated={onCartUpdated}
       />
     </div>
   );

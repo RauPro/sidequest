@@ -2,7 +2,7 @@ import { getProduct } from "@/domain/catalog";
 import type { EncounterContext, EncounterState, Node, ResolvedNode, SideView } from "./types";
 import { getOracleNode } from "./oracle";
 import { getCampNode } from "./camp";
-import { postOfficeNode } from "./post";
+import { postOfficeNodes } from "./post";
 
 const start: Node = {
   speaker: "milo",
@@ -110,7 +110,8 @@ export function getEncounterNode(
     return { ...node, text: typeof node.text === "function" ? node.text(context) : node.text, side };
   }
   if (state.location === "post") {
-    return { ...postOfficeNode, text: postOfficeNode.text as string, side: null };
+    const node = postOfficeNodes[state.nodeId];
+    return node ? { ...node, text: typeof node.text === "function" ? node.text(context) : node.text, side: null } : null;
   }
   const node = marketNodes[state.nodeId];
   if (!node) return null;

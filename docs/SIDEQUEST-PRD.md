@@ -312,7 +312,7 @@ The following is a proposed integration contract. Final event names, fields, and
 
 ### Visual reference
 
-- [SIDEQUEST concept image](ui-concepts/sidequest.png)
+- [SIDEQUEST concept image](../ui-concepts/sidequest.png)
 - The image is the visual target for the village and HUD. Match its composition, perspective, scene detail, lighting, characters, and interface framing as closely as practical, without sacrificing usability, accessibility, or the core journey.
 
 
@@ -400,18 +400,6 @@ Prioritize meaningful checks of recommendation rules, cart calculations, and int
 - A brief explanation of state management, recommendation rules, and integration boundaries.
 - Evidence of meaningful validation.
 - A short demonstration that follows one visitor from discovery to cart, checkout, and any verified integration.
-
-
-
-## 17. Questions to Resolve When the Assignment Arrives
-
-- What outcome is being evaluated, and how much time is available?
-- Are there required technologies, APIs, or deployment targets?
-- Are generated assets, external libraries, and AI assistance permitted?
-- Is a live Klaviyo integration required, and which capabilities must be demonstrated?
-- Will a test account and credentials be provided?
-- Should checkout be simulated or connected to a payment sandbox?
-- Is desktop, mobile, or accessibility coverage explicitly evaluated?
 
 
 

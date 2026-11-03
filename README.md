@@ -1,20 +1,66 @@
 # SIDEQUEST
 
-A Next.js App Router foundation for an explorable storefront. React owns the shopping interface, Phaser owns the browser canvas, and Next.js Route Handlers provide the backend boundary.
+An explorable pixel-art storefront showcasing Klaviyo across the customer journey—from discovery and cart events to back-in-stock requests and personalized email letters.
+
+[![CI](https://github.com/RauPro/sidequest/actions/workflows/ci.yml/badge.svg)](https://github.com/RauPro/sidequest/actions/workflows/ci.yml) · [Play SIDEQUEST](https://sidequest.raul.engineer)
+
+![Willow Market village gameplay](docs/media/village.png)
+
+## Reviewer quick tour (2 min)
+
+1. Visit the Oracle.
+2. Add the companion to your bag.
+3. Press **L** to open the Raven Ledger and see each Klaviyo call.
+4. Open [`/?letter=ember`](https://sidequest.raul.engineer/?letter=ember), the email deep link.
+5. Open the [catalog feed](https://sidequest.raul.engineer/catalog/klaviyo.json).
+
+The public site runs in demo mode unless live tracking is configured. See the [Klaviyo account runbook](docs/KLAVIYO-ACCOUNT-RUNBOOK.md) for account-side setup.
+
+## Klaviyo touchpoints
+
+| Zone | API / endpoint | Metric or properties | Code |
+| --- | --- | --- | --- |
+| Village and Market | Client `POST /client/events` | `Sidequest Location Visited {location}`, `Viewed Product {ProductID, DiscoverySource}` | `src/features/game/GameShell.tsx`, `src/features/encounters/EncounterHost.tsx` |
+| Shop and cart | Client `POST /client/events` | `Viewed Product`, `Added to Cart`, `Started Checkout` | `src/features/klaviyo/track.ts`, `src/domain/klaviyoMetrics.ts` |
+| Oracle | `POST /api/oracle/preferences`; Client events | `Sidequest Oracle Completed {recommendedProductId, ruleVersion, deskMood, visualStyle}` | `src/features/oracle/`, `src/app/api/oracle/preferences/` |
+| Camp | `POST /api/camp/chat`; Client event | `Sidequest Camp Question Asked {topic}`; raw chat text is not an event property | `src/features/encounters/EncounterHost.tsx`, `src/app/api/camp/chat/` |
+| Post Office | `POST /api/subscribe`; Client event | Explicit newsletter consent; `Sidequest Letter Opened {letter}` | `src/features/subscription/`, `src/domain/letters.ts` |
+| Back in stock | Client `POST /client/back-in-stock-subscriptions` | Email channel and feed-derived catalog variant ID | `src/features/klaviyo/backInStock.ts`, `src/domain/inventory.ts` |
+| Catalog | `GET /catalog/klaviyo.json` | Public product, availability, `inventory_quantity`, `inventory_policy` fields | `src/domain/catalog-feed.ts` |
+
+## Architecture
+
+```mermaid
+flowchart LR
+  Browser[Browser game and React] <-->|validated explicit actions| Routes[Next.js Route Handlers]
+  Routes <-->|server-only credentials| Private[Klaviyo private APIs]
+  Browser -->|events and back-in-stock; public site ID| Client[Klaviyo Client APIs]
+  Private --> Flows[Klaviyo flows]
+  Client --> Flows
+  Flows --> Email[Email]
+  Email -->|?letter= and _kx| Browser
+```
+
+## Design decisions & trade-offs
+
+- **Demo/live separation:** demo mode is the default and makes no provider request. Client calls require `NEXT_PUBLIC_SIDEQUEST_CLIENT_TRACKING=live` and a valid public site ID; server routes have their own gates.
+- **Truthful states:** HTTP 202 is request acceptance, not a confirmed subscription, visible event, or delivered email. The back-in-stock UI preserves this distinction.
+- **Stable events:** retries reuse the same `unique_id` and encoded payload. Demo checkout has a custom demo metric and never sends `Placed Order` or real revenue fields.
+- **Consent and abuse controls:** newsletter signup is explicit and double opt-in; public server routes use BotID and rate limits where configured.
+- **Client/server split:** browser-safe Client APIs handle behavioral metrics and explicit back-in-stock requests. Private profile, newsletter, Oracle, and Camp operations stay behind server routes. The private API key is never public.
+- **Identity trade-off:** remembered email, `anonymous_id`, and email-link `_kx` support profile attribution. Client identifiers are untrusted and are not authentication or authorization.
+- **Commerce scope:** cart and checkout are fictional demos; there are no payments, fulfillment, or real orders.
 
 ## Run locally
 
-Use Node.js 24 or a compatible newer release (`.nvmrc` selects 24).
-
 ```sh
+source ~/.nvm/nvm.sh && nvm use
 npm ci
 cp .env.example .env.local
 npm run dev
 ```
 
-If `.env.local` already exists, preserve it rather than overwriting your configuration. The initial local file is provided in demo mode and ignored by Git.
-
-Open `http://localhost:3000`. `/` contains the playable village; `/shop` provides a direct shopping path with the same persisted cart.
+Open `http://localhost:3000`. The playable village is `/`; `/shop` and `/products/ember` provide direct store paths. Local configuration defaults to demo mode.
 
 ## Checks
 
@@ -23,40 +69,7 @@ npm run typecheck
 npm run lint
 npm test
 npm run build
-```
-
-For browser tests, install Chromium once and run Playwright. The test script builds the app, then the test configuration starts its own production server on port 3100 in demo mode.
-
-```sh
-npx playwright install chromium
 npm run test:e2e
 ```
 
-## What is implemented
-
-- App Router pages and a shared client cart provider with versioned local persistence.
-- A full-screen playable Phaser game at `/` rendering Willow Market as original code-drawn 3/4-view pixel art from a tested tile map: layered ground/foreground canvases, y-sorted buildings, props and NPCs, painted signboards, a reference-style HUD and a places menu.
-- Player movement (arrow keys/WASD, tap-to-move pathfinding, collision against tiles and decor), E/Space/Enter to enter a place, canvas hotspots, and DOM panels for Market, Oracle, Camp, Post Office and the bag.
-- A three-product demo catalog, starter recommendation rule, bag controls, and simulated checkout.
-- Companion product pages, public PNG images, and the Klaviyo catalog feed at `/catalog/klaviyo.json`.
-- Oracle choices persisted locally, with optional profile saves through the independently gated `/api/oracle/preferences` endpoint.
-- Validated `/api/identify`, `/api/events`, and `/api/subscribe` contracts with no-network demo mode, invited profile/event adapters, and a public newsletter mode protected by BotID and double opt-in.
-- Unit, integration, and browser test coverage for the foundation.
-
-## Implementation boundaries
-
-The map and commerce work can evolve independently of the integration adapters. Live Klaviyo requests require `SIDEQUEST_MODE=live` and valid private configuration. `KLAVIYO_SUBSCRIPTION_ACCESS=public` opens newsletter signup on Vercel with BotID Basic and a verified double-opt-in list. Public signup never overwrites profile preferences. Identification, events, and invited subscriptions continue to require `KLAVIYO_LIVE_ALLOWED_EMAILS`. Demo remains the default and makes no external provider requests.
-
-Oracle profile saving uses its own `ORACLE_PROFILE_MODE` and `ORACLE_PROFILE_ALLOWED_EMAILS`, so enabling it does not enable subscriptions or events. Camp chat is an in-game encounter backed by the server-only Customer Agent API adapter; no Klaviyo onsite/chat widget is loaded. Remembered identity is optional and stored locally; semantic events are sent only for that identity, with raw Camp questions excluded. See [CUSTOMER-AGENT.md](CUSTOMER-AGENT.md) for the Oracle and Customer Agent contracts and [PRODUCT-PAGES.md](PRODUCT-PAGES.md) for the catalog contract.
-
-Profile upserts return verified IDs; events and subscriptions report accepted/pending rather than claiming delivery. Invited subscription preferences are saved before the consent request; public signup delegates confirmation to Klaviyo without a preliminary profile write. No automatic retry occurs after an uncertain subscription outcome. Opening existing-profile updates to the public still requires verified account ownership; a test allowlist is not authentication.
-
-See [KLAVIYO-INTEGRATION.md](KLAVIYO-INTEGRATION.md) for request contracts, current account setup, verification evidence, and the remaining rollout steps.
-
-Next.js runs development and production builds. There is no Vite application configuration. Vitest uses Vite internally for testing, so Vite can appear in the dependency tree without being the application framework.
-
-## Release source
-
-`main` is the integration branch for the playable village, product feed, Oracle, and Klaviyo adapters. Release from a verified `main` checkout to the existing Vercel project `paypalrau-9729s-projects/sidequest` at `https://sidequest.raul.engineer`. Updating Git alone does not replace an existing CLI deployment. Preserve the full-screen village shell and the route-specific shop/product layouts when integrating future changes.
-
-See [ARCHITECTURE.md](ARCHITECTURE.md) for module boundaries, configuration, current API behavior, and the implementation path. Product context lives in [the PRD](SIDEQUEST-PRD.md) and [the zone/integration brief](SIDEQUEST-Zone-Purposes-and-Klaviyo-Setup.md). Reusable agent guidance lives in [the skill catalog](skills/CATALOG.md).
+See [Architecture](docs/ARCHITECTURE.md), [Klaviyo integration](docs/KLAVIYO-INTEGRATION.md), the [account runbook](docs/KLAVIYO-ACCOUNT-RUNBOOK.md), [product pages and catalog](docs/PRODUCT-PAGES.md), [Customer Agent contract](docs/CUSTOMER-AGENT.md), [PRD](docs/SIDEQUEST-PRD.md), and [zone and integration brief](docs/SIDEQUEST-Zone-Purposes-and-Klaviyo-Setup.md).

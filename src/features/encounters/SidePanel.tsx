@@ -1,13 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { cartLines, cartTotal, maxQuantity } from "@/domain/cart";
-import { formatMoney, getProduct, productIds } from "@/domain/catalog";
+import { cartLines, cartTotal, maxQuantity, type Cart } from "@/domain/cart";
+import { formatMoney, getProduct, productIds, type ProductId } from "@/domain/catalog";
 import { productCopy } from "@/features/products/product-copy";
 import type { CartStore } from "@/features/cart/store";
 import type { DemoOrder } from "@/domain/orders";
 import type { EncounterAction, SideView } from "./types";
-import { trackBagUpdated } from "@/features/klaviyo/track";
+import { isSoldOut } from "@/domain/inventory";
+import { BackInStockForm } from "@/features/klaviyo/BackInStockForm";
+import { trackAddedToCart } from "@/features/klaviyo/track";
 
 export function SidePanel({
   side,
@@ -15,7 +17,6 @@ export function SidePanel({
   store,
   receipt,
   onAction,
-  onCartUpdated,
   dialog = false,
 }: {
   side: SideView;
@@ -23,22 +24,22 @@ export function SidePanel({
   store: CartStore;
   receipt: DemoOrder | null;
   onAction: (action: EncounterAction) => void;
-  onCartUpdated: () => void;
   dialog?: boolean;
 }) {
-  function cartChanged() {
-    trackBagUpdated(store.getSnapshot());
-    onCartUpdated();
+  function cartChanged(previousCart: Cart, productId: ProductId) {
+    trackAddedToCart(previousCart, store.getSnapshot(), productId);
   }
 
   if (!side) return null;
   if (side.kind === "product") {
     const product = getProduct(side.productId);
     const copy = productCopy[product.id];
+    const soldOut = isSoldOut(product.id);
     return (
       <aside className="rpg-frame side-panel product-side-panel" aria-label={`${product.name} details`}>
         <p className="side-panel-eyebrow">COMPANION</p>
         <h2>{product.name}</h2>
+        {soldOut && <p className="sold-out-pill" role="status">Sold out</p>}
         <p className="product-subtitle">{copy.subtitle}</p>
         <div className="product-art-glow" style={{ background: `radial-gradient(circle, ${product.color}88 0%, transparent 70%)` }}>
           <Image src={`/game/products/${product.id}.png`} alt={`${product.name} companion`} width={160} height={160} className="game-image" />
@@ -46,9 +47,10 @@ export function SidePanel({
         <ul className="product-traits">{copy.traits.map((trait) => <li key={trait}>{trait}</li>)}</ul>
         <p className="product-description">{copy.description}</p>
         <p className="product-price">{formatMoney(product.priceMinor)}</p>
-        <button type="button" className="rpg-btn rpg-btn--primary" onClick={() => onAction({ type: "add-to-bag", productId: product.id })}>
-          Add to bag
+        <button type="button" className="rpg-btn rpg-btn--primary" disabled={!product.available || soldOut} onClick={() => onAction({ type: "add-to-bag", productId: product.id })}>
+          {soldOut ? "Sold out" : "Add to bag"}
         </button>
+        {soldOut && <BackInStockForm key={product.id} productId={product.id} productName={product.name} />}
         {side.browsing && (
           <div className="product-carousel">
             <button type="button" className="rpg-btn" aria-label="Previous companion" onClick={() => onAction({ type: "browse-prev" })}>◀</button>
@@ -72,10 +74,10 @@ export function SidePanel({
           <div className="bag-line" key={product.id}>
             <div className="bag-line-name">{product.name}<span>{formatMoney(product.priceMinor)} each</span></div>
             <div className="bag-line-actions">
-              <button type="button" className="rpg-btn" aria-label={`Remove one ${product.name}`} onClick={() => { store.set(product.id, quantity - 1); cartChanged(); }}>−</button>
+              <button type="button" className="rpg-btn" aria-label={`Remove one ${product.name}`} onClick={() => store.set(product.id, quantity - 1)}>−</button>
               <span aria-label={`${product.name} quantity`}>{quantity}</span>
-              <button type="button" className="rpg-btn" aria-label={`Add one ${product.name}`} disabled={quantity >= maxQuantity} onClick={() => { store.add(product.id); cartChanged(); }}>+</button>
-              <button type="button" className="rpg-btn" onClick={() => { store.set(product.id, 0); cartChanged(); }}>Remove {product.name}</button>
+              <button type="button" className="rpg-btn" aria-label={`Add one ${product.name}`} disabled={quantity >= maxQuantity} onClick={() => { const previousCart = store.getSnapshot(); store.add(product.id); cartChanged(previousCart, product.id); }}>+</button>
+              <button type="button" className="rpg-btn" onClick={() => store.set(product.id, 0)}>Remove {product.name}</button>
             </div>
             <strong>{formatMoney(totalMinor)}</strong>
           </div>

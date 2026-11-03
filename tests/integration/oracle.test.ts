@@ -1,7 +1,12 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { POST } from "@/app/api/oracle/preferences/route";
 
-const request = (body: unknown) => new Request("https://sidequest.raul.engineer/api/oracle/preferences", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+let requestIp = 0;
+const request = (body: unknown) => new Request("https://sidequest.raul.engineer/api/oracle/preferences", {
+  method: "POST",
+  headers: { "Content-Type": "application/json", "x-forwarded-for": `198.51.100.${++requestIp}` },
+  body: JSON.stringify(body),
+});
 beforeEach(() => {
   vi.stubEnv("ORACLE_PROFILE_MODE", "live");
   vi.stubEnv("ORACLE_PROFILE_ALLOWED_EMAILS", "tester@example.com");

@@ -111,6 +111,8 @@ export function applyEncounterAction(
       return { state };
     case "goto-location":
       return { state: createEncounterState(action.location) };
+    case "visit-product":
+      return { state: { ...createEncounterState("market"), nodeId: "market-browse", productId: action.productId } };
   }
 }
 

@@ -31,8 +31,10 @@ In Klaviyo **Content → Products → Manage Custom Catalog Sources**, define th
 | `categories` | `$categories` | Categories (List) |
 | `currency` | `currency` | Text |
 | `availability` | `availability` | Text |
+| `inventory_quantity` | `$inventory_quantity` | Number |
+| `inventory_policy` | `$inventory_policy` | Number |
 
-Prices are dollar amounts (24, 18, 28), not minor units. Availability describes demo browsing, not physical stock. No inventory count is invented. Use the `Available` category to filter recommendations if configured; the custom availability field alone does not enforce Klaviyo inventory rules.
+Prices are dollar amounts (24, 18, 28), not minor units. Inventory is illustrative: `NEXT_PUBLIC_SIDEQUEST_SOLD_OUT` is a comma-separated list of product IDs (empty by default); configured products emit `inventory_quantity: 0` and `availability: unavailable`, while other available demo products emit quantity 100. All items use `inventory_policy: 2`. This is not physical inventory or fulfillment.
 
 ## Updating products
 
@@ -41,7 +43,7 @@ Prices are dollar amounts (24, 18, 28), not minor units. Availability describes 
 3. Check the public page, PNG and feed. Klaviyo polls the feed every six hours; use its source sync action when an immediate refresh is available.
 4. Verify the imported product values in Klaviyo. Do not also mutate this feed-managed catalog through the Catalogs API.
 
-Personalized recommendations and product blocks may require Klaviyo Support to configure the catalog's event metric and ProductID mapping. Catalog synchronization alone does not install tracking, enable subscription delivery, or activate the welcome flow.
+Personalized recommendations and product blocks may require Klaviyo Support to configure the catalog's event metric and ProductID mapping. Catalog synchronization alone does not configure event tracking or activate account-side welcome, abandoned-cart, and back-in-stock flows; see the [account runbook](KLAVIYO-ACCOUNT-RUNBOOK.md).
 
 Reference checked November 2, 2026: [Klaviyo custom catalog guide](https://developers.klaviyo.com/en/docs/guide_to_syncing_a_custom_catalog_feed_to_klaviyo).
 
@@ -52,6 +54,4 @@ Reference checked November 2, 2026: [Klaviyo custom catalog guide](https://devel
 - All three items are **Published**: Ember (`ember`), Moss (`moss`), Bolt (`bolt`). The imported Ember record was verified with its image, product link, price 24, demo description and categories.
 - Public product pages, PNGs and JSON feed all returned HTTP 200 without authentication.
 - Type checking, lint, 32 unit/integration tests and 18 desktop/mobile browser tests passed for this release.
-- Release branch: `feat/klaviyo-product-feed`, isolated from ongoing uncommitted game work. Merge its catalog work before deploying another branch, or the feed and image routes will disappear.
-- The release removes the duplicate products layout because the committed store layout already supplies the shared header/main. If merging with the upcoming full-screen game shell (where the store layout only supplies the cart provider), retain that version's route-specific products layout instead. Keep exactly one header/main per product page.
-- The welcome flow, messaging, tracking and live subscriptions were not changed.
+- The feed and product routes are now part of the combined showcase. Product/cart metrics, back-in-stock requests, email templates, and letter deep links are implemented separately from this historical catalog account verification.

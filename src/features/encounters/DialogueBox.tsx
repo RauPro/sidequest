@@ -17,11 +17,13 @@ export function DialogueBox({
   speakerOverride,
   children,
   onChoose,
+  disabledChoiceIds = [],
 }: {
   node: ResolvedNode;
   speakerOverride?: NpcId;
   children?: ReactNode;
   onChoose: (choiceId: string) => void;
+  disabledChoiceIds?: readonly string[];
 }) {
   const dialogRef = useRef<HTMLElement>(null);
   const choicesRef = useRef(node.choices);
@@ -93,7 +95,7 @@ export function DialogueBox({
         {children}
         <div className="dialogue-choices">
           {node.choices.map((choice, index) => (
-            <button key={choice.id} type="button" className="rpg-choice" onClick={() => onChoose(choice.id)}>
+            <button key={choice.id} type="button" className="rpg-choice" disabled={disabledChoiceIds.includes(choice.id)} onClick={() => onChoose(choice.id)}>
               {index < 4 && <span className="rpg-hotkey" aria-hidden="true">[{index + 1}]</span>}
               <span>{choice.label}</span>
             </button>

@@ -4,8 +4,9 @@ import { POST as identify } from "@/app/api/identify/route";
 import { POST as record } from "@/app/api/events/route";
 import { POST as campChat } from "@/app/api/camp/chat/route";
 
+let requestIp = 0;
 function request(body: unknown, path = "subscribe") {
-  return new Request(`http://localhost/api/${path}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  return new Request(`http://localhost/api/${path}`, { method: "POST", headers: { "Content-Type": "application/json", "x-forwarded-for": `198.51.100.${++requestIp}` }, body: JSON.stringify(body) });
 }
 
 beforeEach(() => {

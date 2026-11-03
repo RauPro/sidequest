@@ -6,7 +6,8 @@ import { catalog, formatMoney } from "@/domain/catalog";
 import { maxQuantity } from "@/domain/cart";
 import { productCopy } from "@/features/products/product-copy";
 import { useCart } from "@/features/cart/CartProvider";
-import { trackBagUpdated, trackEventOnce } from "@/features/klaviyo/track";
+import { isSoldOut } from "@/domain/inventory";
+import { trackAddedToCart, trackEventOnce } from "@/features/klaviyo/track";
 
 export function ProductGrid() {
   const { cart, store } = useCart();
@@ -14,6 +15,7 @@ export function ProductGrid() {
     <div className="shop-products">
       {catalog.map((product) => (
         <article className="rpg-frame shop-product-card" key={product.id}>
+          {isSoldOut(product.id) && <p className="sold-out-pill" role="status">Sold out</p>}
           <div className={`shop-product-art shop-product-art--${product.id}`}>
             <Image src={`/game/products/${product.id}.png`} alt={`${product.name} companion`} width={170} height={170} className="game-image" unoptimized />
           </div>
@@ -28,10 +30,11 @@ export function ProductGrid() {
             type="button"
             className="rpg-btn rpg-btn--primary"
             onClick={() => {
+              const previousCart = store.getSnapshot();
               store.add(product.id);
-              trackBagUpdated(store.getSnapshot());
+              trackAddedToCart(previousCart, store.getSnapshot(), product.id);
             }}
-            disabled={!product.available || (cart[product.id] ?? 0) >= maxQuantity}
+            disabled={!product.available || isSoldOut(product.id) || (cart[product.id] ?? 0) >= maxQuantity}
           >
             Add to bag
           </button>

@@ -17,7 +17,15 @@ function allowsOrigin(request: Request): boolean {
   } catch { return false; }
 }
 
-export function jsonRoute<T>(schema: z.ZodType<T>, operation: (input: T) => Promise<unknown>, guard?: () => Promise<void>) {
+export type JsonRouteGuard = (request: Request) => Promise<void>;
+
+export function guards(...requestGuards: JsonRouteGuard[]): JsonRouteGuard {
+  return async (request) => {
+    for (const guard of requestGuards) await guard(request);
+  };
+}
+
+export function jsonRoute<T>(schema: z.ZodType<T>, operation: (input: T) => Promise<unknown>, guard?: JsonRouteGuard) {
   return async function POST(request: Request) {
     try {
       if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
@@ -26,7 +34,7 @@ export function jsonRoute<T>(schema: z.ZodType<T>, operation: (input: T) => Prom
       if (!allowsOrigin(request)) {
         throw new IntegrationError(403, "origin_not_allowed", "This origin is not allowed.");
       }
-      if (guard) await guard();
+      if (guard) await guard(request);
       const reader = request.body?.getReader();
       if (!reader) throw new IntegrationError(400, "invalid_json", "A JSON body is required.");
       let size = 0;

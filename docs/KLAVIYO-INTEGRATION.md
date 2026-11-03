@@ -8,16 +8,19 @@ Next.js server-only adapters use Klaviyo's `2026-10-15` JSON:API contract. Brows
 - `POST /api/events`: send one of the four allowed SIDEQUEST custom events. The input `eventId` becomes `unique_id` and remains identical on retry. HTTP 202 means accepted, processing pending. Demo checkout totals stay custom properties and never populate provider revenue fields.
 - `POST /api/subscribe`: require `consent: true` and submit the list subscription job with `historical_import: false`. Invited mode saves preferences first; public mode verifies bot protection and double opt-in without profile updates. HTTP 202 means accepted; neither confirmation nor email delivery is inferred.
 - `GET /api/subscribe`: expose the configured mode and whether confirmation is required. Public mode verifies list readiness through a read-only Klaviyo request. Private values are never serialized.
+- Browser events use `POST /client/events` with a public site ID, stable `unique_id`, and available email, anonymous ID, or `_kx` identity. Standard metrics include `Viewed Product`, `Added to Cart`, and `Started Checkout`; a simulated checkout is not a `Placed Order`.
+- Explicit back-in-stock forms use `POST /client/back-in-stock-subscriptions` with the catalog variant ID derived from the public feed. Only HTTP 202 is described as accepted; it does not confirm email delivery.
+- A `Sidequest Letter Opened` event accompanies validated `/?letter=` deep links. `_kx` is captured from the same email URL before it is removed from the address bar.
 
 ## Public newsletter rollout
 
-`KLAVIYO_SUBSCRIPTION_ACCESS=public` opens only newsletter signup to all visitors when `SIDEQUEST_MODE=live`. Profile identification, custom events, and Oracle email-profile saves retain their existing invited-recipient gates. The public form is not an authenticated profile session.
+`KLAVIYO_SUBSCRIPTION_ACCESS=public` opens only newsletter signup to all visitors when `SIDEQUEST_MODE=live`. Server profile identification and Oracle email-profile saves retain their existing invited-recipient gates. Client events use the Klaviyo Client API and available identity identifiers; those identifiers are for attribution, not authentication. The public form is not an authenticated profile session.
 
 Public signup uses Vercel BotID Basic (`botid@1.5.12`) on both the client and server. The server fails closed if protection is unavailable or it is not running on Vercel. Each accepted browser request also reads the configured Klaviyo list and requires `opt_in_process=double_opt_in` before submitting the subscription job. The key needs `lists:read`, `lists:write`, `profiles:write`, and `subscriptions:write`. The private JSON:API adapter remains on revision `2026-10-15`; no Klaviyo SDK is installed.
 
 Public submissions require explicit consent, reject preference changes, and skip profile upserts. This lets Klaviyo create a new profile only after the recipient confirms, rather than letting someone overwrite an existing profile by typing its email address. Confirmation establishes newsletter consent, not a website login. The UI reports acceptance and asks the visitor to check their inbox; it does not claim a confirmed subscription or delivered email.
 
-Vercel production needs `SIDEQUEST_MODE=live`, `KLAVIYO_SUBSCRIPTION_ACCESS=public`, `KLAVIYO_PRIVATE_API_KEY`, `KLAVIYO_LIST_ID`, and `KLAVIYO_API_REVISION`. Keep the key encrypted/server-only. `NEXT_PUBLIC_KLAVIYO_SITE_ID` is a public site identifier and does not install the chat widget. Environment changes require a fresh deployment. Existing Oracle variables are independent and must be preserved. Local development and Playwright remain in demo mode.
+Vercel production needs `SIDEQUEST_MODE=live`, `KLAVIYO_SUBSCRIPTION_ACCESS=public`, `KLAVIYO_PRIVATE_API_KEY`, `KLAVIYO_LIST_ID`, and `KLAVIYO_API_REVISION` for the server-side newsletter and profile operations. Keep the key encrypted/server-only. `NEXT_PUBLIC_KLAVIYO_SITE_ID` is a public identifier used by browser Client API events and back-in-stock requests; it is not a secret or chat-widget loader. `NEXT_PUBLIC_SIDEQUEST_CLIENT_TRACKING=live` opts the browser into those calls. Environment changes require a fresh deployment. Existing Oracle variables are independent and must be preserved. Local development and Playwright remain in demo mode.
 
 ### Production evidence — November 2, 2026
 
@@ -31,7 +34,7 @@ Released source commit `0806ae4` to [sidequest.raul.engineer](https://sidequest.
 - Typecheck, lint, 88 unit/integration tests, and all 32 Desktop Chrome/Pixel 7 browser checks passed in the final run.
 - The **SIDEQUEST Welcome** flow remains Draft. Confirmation uses the existing account sender/template; no branded confirmation copy or welcome campaign was published. Actual subscription confirmation and inbox delivery were not tested.
 
-Public signup is available to every visitor. Public Oracle recommendations remain local, while email-profile saves still use the invited test gate. Automatic shopping events and the Camp chat widget are separate features and are not enabled by this release.
+Public signup is available to every visitor. Public Oracle recommendations remain local, while email-profile saves still use the invited test gate. Client-side shopping and letter events are implemented. Camp chat is an in-game encounter backed by its server route; no Klaviyo onsite/chat widget is loaded.
 
 ## Local configuration
 
@@ -41,13 +44,13 @@ Initial adapter verification used an isolated worktree and loaded the existing c
 
 ## Retries and uncertain outcomes
 
-Each provider operation has at most three attempts, a 15-second request budget, and a per-attempt timeout up to five seconds. Profile upserts and event calls can retry transient failures with unchanged payloads. Rate-limit responses respect `Retry-After`; waits beyond the budget return an actionable 429 instead of sleeping indefinitely.
+Server adapters allow up to three attempts within a 15-second budget, with a per-attempt timeout up to five seconds. Browser Client API events retry once after network or 5xx failures and only retry 429 when `Retry-After` is at most five seconds; retries reuse the same event ID and body. Back-in-stock Client API requests are not automatically retried because subscription idempotency is not assumed.
 
-A subscription job is not automatically replayed after a transport timeout or 5xx, because the original job may already have been accepted. The UI disables repeat submission for that uncertain outcome and tells the visitor to check status. Explicit 429 rejection may be retried within the budget. Provider bodies containing personal data are not returned or logged.
+Server newsletter subscription jobs are not automatically replayed after a transport timeout or 5xx because the original job may already have been accepted. A failed or timed-out browser back-in-stock request is reported as unconfirmed, not as a confirmed failure or delivery. Provider bodies containing personal data are not returned or logged.
 
 ## Account configuration and evidence
 
-Configured through the Codex embedded browser on 2026-11-02:
+Configured in the Klaviyo UI on 2026-11-02:
 
 - Existing list: **SIDEQUEST Newsletter**, ID `UhCdqX`. Initially single opt-in; the public rollout requires double opt-in.
 - User-selected test profile: ID `01M6F398XE262Q8R9QNMQC00V4`. Properties: `preferred_companion=ember`, `desk_mood=bold`, `visual_style=fantasy`. Consent was left **Never subscribed**. Klaviyo's list add-profile UI added list membership without marketing subscription.
@@ -60,7 +63,7 @@ Account configuration is separate from backend verification. No live subscriptio
 
 Mocked integration tests cover payload envelopes, preference ordering, consent rejection, allowlist rejection, response validation, event identity reuse, rate-limit delays, unknown subscription outcomes, credential failures, and no-network demo behavior. A production build and browser checks cover the form's public mode and response states. Account-side profile and product-view event delivery were verified through the embedded browser. Live subscription delivery was deliberately not exercised, so that no consent or email was triggered.
 
-The saved email renders Ember for the test profile and the fallback for a profile without a preference. Its HTML content block is versioned at `assets/email/sidequest-welcome-content.html`; the native Klaviyo footer supplies organization and unsubscribe tags. The sender name is SIDEQUEST; the existing sender email and organization/address footer are inherited from the account. Before enabling automatic sending, review those inherited details and the final storefront URL. The draft intentionally has no invented public storefront link. The supported chat widget and domain-event dispatch from the map remain separate work.
+The saved email renders Ember for the test profile and the fallback for a profile without a preference. The versioned welcome content now links each companion block to its `?letter=` deep link; abandoned-cart and back-in-stock content blocks are also in `assets/email/`. The native Klaviyo footer supplies organization and unsubscribe tags. Before enabling automatic sending, review inherited sender details, template variables in Klaviyo preview, and the final storefront URL. The welcome flow was left Draft during prior account verification; see the [account runbook](KLAVIYO-ACCOUNT-RUNBOOK.md) before activation.
 
 ## References
 
