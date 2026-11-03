@@ -41,7 +41,7 @@ export function QuestCard({
         onClick={() => setCollapsedOverride(!collapsed)}
       >
         <span id="quest-title">Your first quest</span>
-        <span aria-hidden="true">{collapsed ? "＋" : "−"}</span>
+        <span className={`quest-chevron${collapsed ? " is-collapsed" : ""}`} aria-hidden="true" />
       </button>
       {!collapsed && (
         <div id="quest-content" className="quest-content">

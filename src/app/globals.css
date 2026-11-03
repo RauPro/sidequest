@@ -58,8 +58,8 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
 
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 .game-shell { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; margin: 0; padding: 0; overflow: hidden; background: var(--ink); }
-.game-stage { position: fixed; inset: 0; z-index: 0; }
-.game-stage canvas { display: block; }
+.game-stage { position: fixed; inset: 0; z-index: 0; background: var(--ink); }
+.game-stage canvas { display: block; width: 100% !important; height: 100% !important; background: var(--ink); }
 .hud-top { position: absolute; top: 0; left: 0; right: 0; z-index: 20; display: flex; align-items: center; gap: 18px; padding: 8px 16px; background: rgba(15, 22, 38, .92); border-bottom: 2px solid #c79a55; color: #f3e3c0; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
 .hud-brand { font-family: Georgia, serif; color: #e0b45c; letter-spacing: .14em; }
 .hud-title { flex: 1; font-family: Georgia, serif; font-size: .95rem; letter-spacing: .08em; }
@@ -173,7 +173,7 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
 .game-image { image-rendering: pixelated; }
 .oracle-save-form { display: grid; gap: 8px; margin: 10px 0; max-width: 420px; }
 .oracle-save-form label { color: var(--gold); }
-.oracle-save-form input { min-height: 44px; padding: 8px 10px; border: 2px solid var(--gold-dim); background: var(--ink-2); color: var(--text); font: inherit; }
+.oracle-save-form input { min-height: 44px; padding: 8px 10px; border: 2px solid var(--gold-dim); background: rgb(20 29 49 / 97%); color: var(--text); font: inherit; }
 .oracle-save-form input:focus-visible { outline: 3px solid var(--bolt); outline-offset: 2px; }
 .oracle-save-form button { justify-self: start; }
 .oracle-save-form [role="status"] { min-height: 1.4em; margin: 2px 0; color: var(--moss); }
@@ -185,7 +185,7 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
 .camp-transcript strong { color: var(--gold); }
 .camp-chat-form, .camp-email-form { display: grid; gap: 8px; }
 .camp-chat-form label, .camp-email-form label { color: var(--gold); }
-.camp-chat-form input, .camp-email-form input { min-height: 44px; width: 100%; padding: 8px 10px; border: 2px solid var(--gold-dim); background: var(--ink-2); color: var(--text); font: inherit; }
+.camp-chat-form input, .camp-email-form input { min-height: 44px; width: 100%; padding: 8px 10px; border: 2px solid var(--gold-dim); background: rgb(20 29 49 / 97%); color: var(--text); font: inherit; }
 .camp-input-row { display: flex; gap: 8px; }
 .camp-input-row button { min-width: 84px; }
 .camp-pending { margin: 0; color: var(--muted); }
@@ -196,7 +196,7 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
 .post-office-form > p { margin: 6px 0; }
 .post-office-form form { display: grid; gap: 8px; }
 .post-office-form form > label:not(.post-consent) { color: var(--gold); }
-.post-office-form input[type="email"] { min-height: 44px; width: 100%; padding: 8px 10px; border: 2px solid var(--gold-dim); background: var(--ink-2); color: var(--text); font: inherit; }
+.post-office-form input[type="email"] { min-height: 44px; width: 100%; padding: 8px 10px; border: 2px solid var(--gold-dim); background: rgb(20 29 49 / 97%); color: var(--text); font: inherit; }
 .post-office-form .post-consent { display: flex; align-items: flex-start; gap: 8px; color: var(--parchment); }
 .post-office-form .post-consent input { margin-top: 5px; accent-color: var(--gold); }
 .post-office-form button { justify-self: start; }
@@ -215,6 +215,7 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
 }
 
 .game-image { image-rendering: pixelated; }
+/* Translucent overlays and hidden native scrollbars avoid SwiftShader's mirrored WebGL culling. */
 .rpg-hud {
   position: absolute;
   inset: 0 0 auto;
@@ -226,11 +227,11 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
   gap: 16px;
   padding: 0 18px;
   color: var(--text);
-  background: var(--ink);
+  background: rgb(15 20 40 / 97%);
   border-bottom: 2px solid var(--gold);
   font-size: 14px;
 }
-.rpg-brand { display: inline-flex; align-items: center; gap: 9px; width: max-content; color: var(--gold); text-decoration: none; font-size: 17px; letter-spacing: .12em; font-weight: 700; }
+.rpg-brand { display: inline-flex; align-items: center; gap: 9px; width: max-content; color: var(--gold); text-decoration: none; font-size: 17px; letter-spacing: .12em; font-weight: 500; }
 .rpg-brand-icon { object-fit: contain; }
 .rpg-hud-title { text-align: center; color: var(--parchment); letter-spacing: .08em; white-space: nowrap; }
 .rpg-hud-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
@@ -243,15 +244,15 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
   padding: 5px 10px;
   border: 2px solid var(--gold);
   border-radius: 4px;
-  background: var(--ink);
+  background: rgb(15 20 40 / 97%);
   color: var(--gold);
   font-family: inherit;
   font-size: 14px;
   line-height: 1.2;
   text-decoration: none;
 }
-.rpg-hud .rpg-btn:hover, .rpg-hud .rpg-btn:focus-visible { background: var(--gold); color: var(--ink); }
-.rpg-bag-count { min-width: 22px; height: 22px; display: inline-grid; place-items: center; border-radius: 50%; background: var(--gold); color: var(--ink); font-weight: 700; }
+.rpg-hud .rpg-btn:hover, .rpg-hud .rpg-btn:focus-visible { background: rgb(199 154 85 / 97%); color: var(--ink); }
+.rpg-bag-count { min-width: 22px; height: 22px; display: inline-grid; place-items: center; border-radius: 50%; background: rgb(199 154 85 / 97%); color: var(--ink); font-weight: 500; }
 .rpg-frame {
   position: relative;
   border: 3px solid var(--gold);
@@ -276,15 +277,15 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
   padding: 9px 16px;
   border: 2px solid var(--gold);
   border-radius: 4px;
-  background: var(--ink);
+  background: rgb(15 20 40 / 97%);
   color: var(--gold);
   cursor: pointer;
   font-family: inherit;
   font-size: 15px;
 }
-.rpg-btn:hover, .rpg-btn:focus-visible { background: var(--gold); color: var(--ink); }
-.rpg-btn--primary { background: var(--gold); color: var(--ink); font-weight: 700; }
-.rpg-btn--primary:hover, .rpg-btn--primary:focus-visible { background: var(--parchment); color: var(--ink); }
+.rpg-btn:hover, .rpg-btn:focus-visible { background: rgb(199 154 85 / 97%); color: var(--ink); }
+.rpg-btn--primary { background: rgb(199 154 85 / 97%); color: var(--ink); font-weight: 500; }
+.rpg-btn--primary:hover, .rpg-btn--primary:focus-visible { background: rgb(243 227 192 / 97%); color: var(--ink); }
 .rpg-choice {
   width: 100%;
   min-height: 46px;
@@ -295,7 +296,7 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
   text-align: left;
   border: 1px solid var(--gold-dim);
   border-radius: 3px;
-  background: var(--ink-2);
+  background: rgb(20 29 49 / 97%);
   color: var(--text);
   font-family: inherit;
   font-size: 15px;
@@ -325,8 +326,10 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
   text-align: left;
   font-family: inherit;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 500;
 }
+.quest-chevron { width: 9px; height: 9px; margin: 0 3px 4px 12px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform .15s ease; }
+.quest-chevron.is-collapsed { margin-bottom: 0; transform: rotate(-45deg); }
 .quest-toggle:hover { background: transparent; color: var(--parchment); }
 .quest-content ol { display: grid; gap: 8px; list-style: none; margin: 10px 0; padding: 0; }
 .quest-step { display: grid; grid-template-columns: 22px 1fr; gap: 5px; align-items: start; color: var(--parchment); font-size: 14px; line-height: 1.35; }
@@ -357,7 +360,7 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
   content: "PLACES";
   margin: 0 2px 2px;
   color: var(--gold);
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: .12em;
   background: none;
 }
@@ -377,8 +380,8 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
   text-align: left;
   white-space: nowrap;
 }
-.place-button:hover, .place-button[aria-pressed="true"] { border-color: var(--gold-dim); background: var(--ink-2); color: var(--gold); }
-.location-name { font-weight: 700; }
+.place-button:hover, .place-button[aria-pressed="true"] { border-color: var(--gold-dim); background: rgb(20 29 49 / 97%); color: var(--gold); }
+.location-name { font-weight: 500; }
 .location-purpose { color: var(--muted); text-align: right; font-size: 14px; }
 .controls-bar {
   position: absolute;
@@ -431,7 +434,7 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
   flex: 0 0 112px;
   overflow: hidden;
   border: 2px solid var(--gold-dim);
-  background: var(--ink-2);
+  background: rgb(20 29 49 / 97%);
 }
 .dialogue-portrait img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .backpack-portrait { display: grid; place-items: center; }
@@ -462,13 +465,13 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
 .product-traits { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 8px 0; padding: 0; }
 .product-traits li { padding: 3px 7px; border: 1px solid var(--gold-dim); border-radius: 3px; color: var(--parchment); font-size: 14px; }
 .side-panel > p { font-size: 14px; line-height: 1.35; }
-.product-price { color: var(--gold); font-size: 17px !important; font-weight: 700; }
+.product-price { color: var(--gold); font-size: 17px !important; font-weight: 500; }
 .side-panel .rpg-btn { width: 100%; margin-top: 7px; }
 .product-carousel { display: flex; gap: 7px; }
 .product-carousel .rpg-btn { flex: 1; }
 .side-keep-exploring { background: transparent; }
 .bag-line { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; padding: 10px 0; border-bottom: 1px solid var(--gold-dim); font-size: 14px; }
-.bag-line-name { display: grid; gap: 3px; font-weight: 700; }
+.bag-line-name { display: grid; gap: 3px; font-weight: 500; }
 .bag-line-name span { color: var(--muted); font-weight: 400; }
 .bag-line-actions { grid-column: 1 / -1; display: flex; align-items: center; gap: 7px; }
 .bag-line-actions .rpg-btn { width: auto; min-width: 42px; min-height: 36px; margin: 0; padding: 4px 8px; }
@@ -579,4 +582,13 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
   font-family: var(--font-pixel), monospace;
   font-variant-ligatures: none;
   font-feature-settings: "liga" 0, "clig" 0, "calt" 0;
+  font-synthesis: none;
+}
+.game-shell strong, .game-shell b, .store-game-shell strong, .store-game-shell b { font-weight: 500; }
+.game-shell * { scrollbar-width: none; }
+.game-shell *::-webkit-scrollbar { display: none; }
+@media (max-width: 720px) {
+  .game-shell[data-encounter-open="true"] .quest-card,
+  .game-shell[data-encounter-open="true"] .hint-bar { display: none; }
+  .dialogue-box, .side-panel { background: rgb(15 20 40 / 97%); }
 }

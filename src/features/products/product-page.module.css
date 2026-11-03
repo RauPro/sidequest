@@ -16,7 +16,7 @@
 .price span { display: inline-block; margin-left: 10px; color: var(--muted); font-size: 14px; }
 .availability { margin: 5px 0 16px; color: var(--muted); font-size: 14px; }
 .purchase { display: grid; justify-items: start; gap: 12px; }
-.addButton { min-width: 220px; background: var(--gold); color: var(--ink); border-color: var(--gold); font-weight: 700; }
+.addButton { min-width: 220px; background: var(--gold); color: var(--ink); border-color: var(--gold); font-weight: 500; }
 .addButton:hover { background: var(--parchment); color: var(--ink); }
 .feedback { min-height: 1.6em; margin: 0; color: var(--muted); font-size: 14px; }
 .others { margin-top: 36px; padding-top: 24px; border-top: 1px solid var(--gold-dim); }

@@ -159,7 +159,7 @@ export function GameShell() {
     setHintOverride(`Follow the glow to the ${target.name}`);
   };
 
-  return <main id="main" className="game-shell" data-testid="village-map" data-ready={ready ? "true" : undefined} data-player-tile={tile ? `${tile.col},${tile.row}` : undefined}>
+  return <main id="main" className="game-shell" data-testid="village-map" data-ready={ready ? "true" : undefined} data-encounter-open={panel ? "true" : undefined} data-player-tile={tile ? `${tile.col},${tile.row}` : undefined}>
     <h1 className="visually-hidden">Willow Market</h1>
     <PhaserHost bridge={bridge} />
     <GameHud title="Willow Market" view="village" onOpenBag={(event) => openEncounter("bag")(event)} bagOpen={panel === "bag"} />

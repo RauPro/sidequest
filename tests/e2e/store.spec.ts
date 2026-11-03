@@ -1,10 +1,13 @@
 import { expect, test } from "@playwright/test";
+import sharp from "sharp";
 import { isWalkableKind, TILE_SIZE, tileAt } from "../../src/game/world/villageMap";
 import { cameraCenter, cameraZoom, worldToScreen } from "../../src/game/systems/camera";
 
 test("village and shop share a persisted bag and simulated checkout", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByTestId("village-map")).toHaveAttribute("data-ready", "true");
+  const canvasHeight = await page.locator(".game-stage canvas").evaluate((canvas) => canvas.getBoundingClientRect().height);
+  expect(canvasHeight).toBeGreaterThanOrEqual((await page.evaluate(() => window.innerHeight)) - 1);
   await page.getByRole("button", { name: "Market", exact: true }).click();
   await page.getByRole("button", { name: "Show me the companions", exact: true }).click();
   await page.getByRole("button", { name: "Add to bag", exact: true }).last().click();
@@ -20,6 +23,31 @@ test("village and shop share a persisted bag and simulated checkout", async ({ p
   await page.goto("/");
   await expect(page.locator("canvas")).toHaveCount(1);
   await expect(page.getByTestId("village-map")).toHaveAttribute("data-ready", "true");
+});
+
+test("desktop screenshots keep pixels opaque beneath the HUD and Camp dialogue", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "chromium", "Screenshot compositing regression is desktop-only");
+  await page.setViewportSize({ width: 1586, height: 992 });
+  const sampleAlpha = async (url: string, point: { x: number; y: number }) => {
+    await page.goto(url);
+    await expect(page.getByTestId("village-map")).toHaveAttribute("data-ready", "true");
+    const image = await page.screenshot();
+    const { data, info } = await sharp(image).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    return data[(point.y * info.width + point.x) * 4 + 3];
+  };
+
+  expect(await sampleAlpha("/", { x: 800, y: 982 })).toBe(255);
+
+  await page.goto("/?visit=camp");
+  await expect(page.getByTestId("village-map")).toHaveAttribute("data-ready", "true");
+  await page.getByRole("button", { name: "How does checkout work?", exact: true }).click();
+  await page.getByRole("button", { name: "Skip", exact: true }).click();
+  await page.getByRole("button", { name: "Is shipping real?", exact: true }).click();
+  await expect(page.locator(".camp-transcript")).toContainText("Is shipping real?");
+  await expect(page.locator(".camp-transcript")).toContainText("fictional demo village");
+  const campImage = await page.screenshot();
+  const { data, info } = await sharp(campImage).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  expect(data[(327 * info.width + 747) * 4 + 3]).toBe(255);
 });
 
 test("visit links open every village encounter", async ({ page }) => {

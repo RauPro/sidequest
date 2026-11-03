@@ -26,6 +26,17 @@ describe("camera math", () => {
     expectAxis(high.x, halfW, WORLD_WIDTH, "max");
     expectAxis(high.y, halfH, WORLD_HEIGHT, "max");
   });
+  it.each([[1586, 992], [412, 915]] as const)("keeps the viewport inside world bounds at %ix%i", (w, h) => {
+    const zoom = cameraZoom(w, h);
+    const center = cameraCenter(w, h, zoom, { x: visitorSpawn.x, y: visitorSpawn.y - 12 });
+    const halfW = w / (2 * zoom);
+    const halfH = h / (2 * zoom);
+
+    expect(center.x - halfW).toBeGreaterThanOrEqual(-1e-6);
+    expect(center.y - halfH).toBeGreaterThanOrEqual(-1e-6);
+    expect(center.x + halfW).toBeLessThanOrEqual(WORLD_WIDTH + 1e-6);
+    expect(center.y + halfH).toBeLessThanOrEqual(WORLD_HEIGHT + 1e-6);
+  });
   it("round-trips worldToScreen", () => {
     const zoom = cameraZoom(1280, 720);
     const center = cameraCenter(1280, 720, zoom, { x: visitorSpawn.x, y: visitorSpawn.y - 12 });
