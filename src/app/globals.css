@@ -81,6 +81,104 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
   .game-panel { top: auto; bottom: 0; left: 0; right: 0; width: auto; max-height: 65vh; }
 }
 
+.store-game-shell {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  color: var(--text);
+  background: var(--ink);
+}
+
+.store-village-background {
+  position: fixed;
+  z-index: -1;
+  inset: -16px;
+  background: url("/game/village/background.webp") center / cover no-repeat;
+  filter: blur(3px) brightness(.42) saturate(.72);
+  transform: scale(1.03);
+}
+
+.store-game-shell::after {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 15%, rgb(15 20 40 / 84%) 100%);
+  content: "";
+  pointer-events: none;
+}
+
+.store-game-shell .rpg-hud {
+  position: fixed;
+  z-index: 60;
+  inset: 0 0 auto;
+}
+
+.store-main {
+  position: relative;
+  z-index: 0;
+  width: min(1280px, 100%);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 78px 24px 48px;
+}
+
+.shop-view { padding: 12px 0; }
+.shop-intro { text-align: center; margin: 0 auto 24px; }
+.shop-intro h1 { color: var(--parchment); font-size: clamp(28px, 4vw, 40px); margin: 0 0 18px; }
+.shop-intro .rpg-eyebrow { margin: 0 0 6px; }
+.shop-milo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 10px 18px 10px 10px;
+  text-align: left;
+}
+.shop-milo img { width: 64px; height: 64px; border: 2px solid var(--gold); background: var(--ink-2); }
+.shop-milo p { margin: 0; line-height: 1.45; }
+.shop-milo strong { color: var(--gold); }
+.shop-products { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.shop-product-card { display: flex; flex-direction: column; align-items: flex-start; padding: 14px; }
+.shop-product-card h2 { color: var(--parchment); margin: 10px 0 4px; font-size: 22px; }
+.shop-product-art {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 190px;
+  background: radial-gradient(circle, rgb(212 168 87 / 18%) 0%, transparent 65%), var(--ink-2);
+  border: 1px solid var(--gold-dim);
+}
+.shop-product-art img { width: 170px; height: 170px; object-fit: contain; }
+.shop-product-subtitle { color: var(--gold); margin: 0; }
+.product-traits { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 10px 0; }
+.product-traits li { color: var(--muted); border: 1px solid var(--gold-dim); padding: 3px 8px; font-size: 14px; }
+.shop-product-card > p:not(.shop-product-subtitle):not(.product-price) { color: var(--muted); margin: 4px 0 10px; }
+.product-price { color: var(--gold); margin: auto 0 12px; font-size: 18px; }
+.shop-product-card .rpg-btn { width: 100%; min-height: 44px; text-decoration: none; }
+.shop-product-card .shop-details-link { display: flex; align-items: center; justify-content: center; margin-top: 8px; }
+.village-services { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 22px; padding: 14px; }
+.village-services h2 { color: var(--gold); font-size: 18px; margin: 0 auto 0 0; }
+.village-services a { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 12px; border: 1px solid var(--gold-dim); color: var(--parchment); text-decoration: none; }
+.village-services a:hover, .village-services a:focus-visible { background: var(--ink-2); outline: 2px solid var(--gold); outline-offset: 2px; }
+.store-bag-panel { position: fixed; z-index: 80; inset: 70px 16px auto auto; }
+.store-bag-panel .side-panel { position: static; width: min(380px, calc(100vw - 32px)); max-height: calc(100vh - 88px); overflow-y: auto; }
+.game-image { image-rendering: pixelated; }
+
+@media (max-width: 720px) {
+  .store-main { padding: 70px 12px 32px; }
+  .shop-products { grid-template-columns: 1fr; }
+  .shop-product-card { max-width: 520px; width: 100%; margin-inline: auto; }
+  .shop-product-art { min-height: 160px; }
+  .shop-product-art img { width: 145px; height: 145px; }
+  .village-services { align-items: stretch; flex-direction: column; }
+  .village-services h2 { margin: 0; }
+  .village-services a { justify-content: center; }
+  .store-bag-panel { inset: 64px 8px auto auto; }
+  .store-bag-panel .side-panel { width: min(380px, calc(100vw - 16px)); max-height: calc(100vh - 76px); }
+}
+
 .game-image { image-rendering: pixelated; }
 .rpg-hud {
   position: absolute;

@@ -20,6 +20,7 @@ export function SidePanel({
   receipt,
   onAction,
   onCartUpdated,
+  dialog = false,
 }: {
   side: SideView;
   cart: ReturnType<CartStore["getSnapshot"]>;
@@ -27,6 +28,7 @@ export function SidePanel({
   receipt: DemoOrder | null;
   onAction: (action: EncounterAction) => void;
   onCartUpdated: () => void;
+  dialog?: boolean;
 }) {
   if (!side) return null;
   if (side.kind === "product") {
@@ -60,7 +62,7 @@ export function SidePanel({
   if (side.kind === "bag") {
     const lines = cartLines(cart);
     return (
-      <aside className="rpg-frame side-panel bag-side-panel" role="region" aria-label="Your backpack">
+      <aside className="rpg-frame side-panel bag-side-panel" role={dialog ? "dialog" : "region"} aria-modal={dialog ? "false" : undefined} aria-label="Your backpack" tabIndex={dialog ? -1 : undefined}>
         <p className="side-panel-eyebrow">YOUR BACKPACK</p>
         <h2>Your backpack</h2>
         {!lines.length && <p>Your bag is empty. Browse the companions?</p>}
@@ -87,7 +89,7 @@ export function SidePanel({
   }
 
   return (
-    <aside className="rpg-frame side-panel receipt-side-panel" role="region" aria-label="Demo order receipt">
+    <aside className="rpg-frame side-panel receipt-side-panel" role={dialog ? "dialog" : "region"} aria-modal={dialog ? "false" : undefined} aria-label="Demo order receipt" tabIndex={dialog ? -1 : undefined}>
       <p className="side-panel-eyebrow">DEMO RECEIPT</p>
       <h2>Order snapshot</h2>
       {receipt?.lines.map((line) => (
