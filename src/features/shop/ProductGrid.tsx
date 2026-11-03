@@ -22,7 +22,7 @@ export function ProductGrid() {
           <ul className="product-traits" aria-label={`${product.name} traits`}>
             {productCopy[product.id].traits.map((trait) => <li key={trait}>{trait}</li>)}
           </ul>
-          <p>{product.description}</p>
+          <p>{productCopy[product.id].description}</p>
           <p className="product-price">{formatMoney(product.priceMinor)}</p>
           <button
             type="button"

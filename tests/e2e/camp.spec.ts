@@ -7,6 +7,13 @@ test("Camp answers its checkout quick reply in demo without showing a handoff", 
   await page.getByRole("button", { name: "How does checkout work?", exact: true }).click();
   await page.getByRole("button", { name: "Skip", exact: true }).click();
   await expect(page.getByText("Checkout is a demo: no payment is taken and nothing is delivered.")).toBeVisible();
+  await expect(page.getByText("Pull up a log, traveler! Ask me anything about the companions, checkout, or the village.", { exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: "Is shipping real?", exact: true }).click();
+  const transcript = page.locator(".camp-transcript");
+  await expect(transcript).toContainText("Is shipping real?");
+  await expect(page.getByLabel("Your message")).toBeInViewport();
+  await expect(page.getByRole("button", { name: "How does checkout work?", exact: true })).toBeInViewport();
+  await expect.poll(() => transcript.evaluate((element) => element.scrollHeight - element.clientHeight - element.scrollTop)).toBeLessThanOrEqual(1);
   await expect(page.getByRole("button", { name: "Start a new chat" })).toHaveCount(0);
   await expect(page.getByText("This chat is closed", { exact: false })).toHaveCount(0);
 });

@@ -60,6 +60,7 @@ export type ResolvedNode = Omit<Node, "text"> & { text: string };
 
 export type EncounterState = {
   location: LocationId | "bag" | null;
+  bagSource?: "market" | "hud";
   nodeId: NodeId | null;
   productId: ProductId;
   receipt: DemoOrder | null;

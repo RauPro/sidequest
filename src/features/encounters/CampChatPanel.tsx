@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { maskEmail } from "@/features/klaviyo/identity";
 
 type ChatLine = { role: "user" | "agent"; content: string };
@@ -29,10 +29,16 @@ export function CampChatPanel({
   const [value, setValue] = useState("");
   const [email, setEmail] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const transcriptRef = useRef<HTMLDivElement>(null);
   const visible = messages.slice(-12);
   const closed = stage === "camp-handoff";
   const emailChoice = stage === "camp-email";
   const askCustom = stage === "camp-custom";
+
+  useEffect(() => {
+    const transcript = transcriptRef.current;
+    if (transcript) transcript.scrollTop = transcript.scrollHeight;
+  }, [messages.length, pending]);
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -49,7 +55,7 @@ export function CampChatPanel({
 
   return (
     <section className="camp-chat-panel" aria-label="Camp chat">
-      <div className="camp-transcript" aria-label="Chat transcript">
+      <div ref={transcriptRef} className="camp-transcript" role="log" aria-label="Chat transcript">
         {visible.map((message, index) => (
           <p key={`${messages.length - visible.length + index}-${message.role}`} aria-live={message.role === "agent" && index === visible.length - 1 ? "polite" : undefined}>
             <strong>{message.role === "user" ? "You:" : "Finn:"}</strong> {message.content}

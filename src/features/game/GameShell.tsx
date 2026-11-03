@@ -55,6 +55,7 @@ export function GameShell() {
   const [hintOverride, setHintOverride] = useState<string | null>(null);
   const [opener, setOpener] = useState<HTMLElement | null>(null);
   const deepLinkHandled = useRef(false);
+  const locationOpener = useRef<LocationId | null>(null);
   const quest = useQuestProgress();
   const { cart } = useCart();
   const identity = useIdentity();
@@ -110,6 +111,12 @@ export function GameShell() {
   }), [bridge]);
   useEffect(() => { bridge.dispatch({ type: "input", enabled: panel === null }); }, [bridge, panel]);
   useEffect(() => {
+    if (panel !== null || !locationOpener.current) return;
+    const location = locationOpener.current;
+    locationOpener.current = null;
+    document.querySelector<HTMLButtonElement>(`[data-location-id="${location}"]`)?.focus();
+  }, [panel]);
+  useEffect(() => {
     if (cartCount(cart) > 0) updateQuestProgress((current) => ({ ...current, bag: true }));
   }, [cart]);
   useEffect(() => {
@@ -120,6 +127,7 @@ export function GameShell() {
   const openEncounter = (id: LocationId | "bag") => (e?: SyntheticEvent) => {
     if (e) setOpener(e.currentTarget as HTMLElement);
     else setOpener(document.querySelector("[data-game-stage]"));
+    if (id !== "bag" && e) locationOpener.current = id;
     if (id !== "bag") trackEventOnce(`location:${id}`, "Sidequest Location Visited", { location: id });
     if (id === "market") updateQuestProgress((current) => ({ ...current, market: true }));
     const opened = newEncounter(id);
@@ -133,11 +141,16 @@ export function GameShell() {
   };
   const nearLoc = locations.find((l) => l.id === nearby);
   const hoverLoc = locations.find((l) => l.id === hover);
-  const hint = hintOverride ?? (nearLoc
-    ? `Press E or tap to enter the ${nearLoc.name} — ${nearLoc.purpose}`
+  const touchInput = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+  const hint = panel ? "" : hintOverride ?? (nearLoc
+    ? touchInput
+      ? `Tap ${nearLoc.name} again to enter`
+      : `Press E to visit the ${nearLoc.name}`
     : hoverLoc
-      ? `${hoverLoc.name} — ${hoverLoc.purpose}`
-      : "Move: arrow keys or tap a path · Interact: E or tap a place");
+      ? touchInput
+        ? `Tap ${hoverLoc.name} to visit`
+        : `Press E to visit the ${hoverLoc.name}`
+      : "");
 
   const pointToLocation = (id: LocationId) => {
     const target = locations.find((location) => location.id === id);
@@ -152,10 +165,12 @@ export function GameShell() {
     <GameHud title="Willow Market" view="village" onOpenBag={(event) => openEncounter("bag")(event)} bagOpen={panel === "bag"} />
     {!ready && <p className="game-loader" role="status">Loading village…{slow && <> The map is taking a while. Use the places menu or <Link href="/shop">open Shop view</Link>.</>}</p>}
     <QuestCard progress={quest} />
-    <nav className="places-menu rpg-frame" aria-label="Village places" data-dialogue-open={panel ? "true" : "false"}>{locations.map((l) =>
+    {!panel && <nav className="places-menu rpg-frame" aria-label="Village places">{locations.map((l) =>
       <button
         key={l.id}
         className="place-button"
+        data-location-id={l.id}
+        aria-label={l.name}
         aria-pressed={panel === l.id}
         aria-haspopup="dialog"
         aria-expanded={panel === l.id}
@@ -167,10 +182,10 @@ export function GameShell() {
         onMouseLeave={() => bridge.dispatch({ type: "highlight", id: null })}
       >
         <span className="location-name">{l.name}</span>
-        <span className="location-purpose" id={`place-purpose-${l.id}`} aria-hidden="true">{l.purpose}</span>
+        <span className="location-purpose visually-hidden" id={`place-purpose-${l.id}`}>{l.purpose}</span>
       </button>)}
-    </nav>
-    <p className="hint-bar" aria-live="polite">{hint}</p>
+    </nav>}
+    <p className="hint-bar rpg-frame" aria-live="polite" aria-atomic="true" hidden={!hint}>{hint}</p>
     <aside className="rpg-frame controls-bar" aria-label="Game controls">
       <span className="controls-keyboard"><kbd>WASD/↑↓←→</kbd> Move <kbd>E</kbd> Interact <kbd>B</kbd> Bag <kbd>Esc</kbd> Close</span>
       <span className="controls-touch">Tap a path to move · Tap a place to visit</span>

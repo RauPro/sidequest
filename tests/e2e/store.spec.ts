@@ -35,8 +35,42 @@ test("visit links open every village encounter", async ({ page }) => {
     await page.goto(`/?visit=${id}`);
     await expect(page.getByTestId("village-map")).toHaveAttribute("data-ready", "true");
     await panels[id]();
+    await expect(page.getByRole("navigation", { name: "Village places" })).toHaveCount(0);
   }
   expect(errors).toEqual([]);
+});
+
+test("bag portrait reflects whether it was opened from Market or the HUD", async ({ page }) => {
+  await page.goto("/?visit=market");
+  await expect(page.getByTestId("village-map")).toHaveAttribute("data-ready", "true");
+  await page.getByRole("button", { name: "Open my bag", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Milo · Merchant" })).toBeVisible();
+  await expect(page.locator(".places-menu")).toHaveCount(0);
+  await page.getByRole("button", { name: "Keep exploring", exact: true }).first().click();
+  await page.getByRole("button", { name: "Bag, 0 items" }).click();
+  await expect(page.locator(".backpack-portrait svg")).toBeVisible();
+});
+
+test("Market side-panel actions fit within the mobile encounter area", async ({ page }) => {
+  await page.goto("/?visit=market");
+  await expect(page.getByTestId("village-map")).toHaveAttribute("data-ready", "true");
+  await page.getByRole("button", { name: "Show me the companions", exact: true }).click();
+  const sidePanel = page.locator(".product-side-panel");
+  await expect(sidePanel).toContainText("The brave little dragon");
+  await expect(sidePanel).toContainText("Brave");
+  await expect(sidePanel).toContainText("Adventurous");
+  await expect(sidePanel).toContainText("A fiery orange companion who brings warmth, courage, and a little adventure to your desk.");
+  await expect(sidePanel.getByRole("button", { name: "Add to bag", exact: true })).toBeVisible();
+  await expect(sidePanel.getByRole("button", { name: "Keep exploring", exact: true })).toBeVisible();
+  const actionsFit = await sidePanel.evaluate((element) => {
+    const panel = element.getBoundingClientRect();
+    const buttons = [...element.querySelectorAll(".rpg-btn")];
+    return buttons.every((button) => {
+      const rect = button.getBoundingClientRect();
+      return rect.top >= panel.top && rect.bottom <= panel.bottom && rect.top >= 0 && rect.bottom <= window.innerHeight;
+    });
+  });
+  expect(actionsFit).toBe(true);
 });
 
 test("the Post Office form stays explicitly simulated without horizontal overflow", async ({ page }, testInfo) => {
@@ -63,10 +97,11 @@ test("the visitor walks with keys, enters places with E and tap-moves", async ({
   await page.goto("/");
   const map = page.getByTestId("village-map");
   await expect(map).toHaveAttribute("data-ready", "true");
+  await expect(page.locator(".hint-bar")).toBeHidden();
   await expect(map).toHaveAttribute("data-player-tile", "18,14");
 
   await page.keyboard.down("ArrowRight");
-  await expect(page.locator(".hint-bar")).toContainText("enter the Market", { timeout: 5000 });
+  await expect(page.locator(".hint-bar")).toContainText(/Press E to visit the Market|Tap Market again to enter/, { timeout: 5000 });
   await page.keyboard.up("ArrowRight");
   await page.keyboard.press("e");
   await page.getByRole("button", { name: "Show me the companions", exact: true }).click();

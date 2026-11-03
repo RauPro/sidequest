@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, type ReactNode } from "react";
-import type { ResolvedNode } from "./types";
+import type { NpcId, ResolvedNode } from "./types";
 
 const speakers = {
   milo: "Milo · Merchant",
@@ -14,10 +14,12 @@ const speakers = {
 
 export function DialogueBox({
   node,
+  speakerOverride,
   children,
   onChoose,
 }: {
   node: ResolvedNode;
+  speakerOverride?: NpcId;
   children?: ReactNode;
   onChoose: (choiceId: string) => void;
 }) {
@@ -47,20 +49,36 @@ export function DialogueBox({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  const speakerLabel = speakers[node.speaker];
+  const speakerId = speakerOverride ?? node.speaker;
+  const speakerLabel = speakers[speakerId];
   return (
     <section
       ref={dialogRef}
-      className="rpg-frame dialogue-box"
+      className={`rpg-frame dialogue-box${speakerId === "finn" ? " camp-dialogue" : ""}`}
       role="dialog"
       aria-modal="false"
       aria-labelledby="dialogue-speaker"
       tabIndex={-1}
     >
-      {node.speaker !== "bag" && (
+      {speakerId === "bag" ? (
+        <div className="dialogue-portrait backpack-portrait" aria-hidden="true">
+          <svg viewBox="0 0 16 16" shapeRendering="crispEdges">
+            <rect x="6" y="1" width="4" height="2" fill="#d4a857" />
+            <rect x="5" y="3" width="6" height="2" fill="#6f442f" />
+            <rect x="3" y="5" width="10" height="9" fill="#8b5437" />
+            <rect x="4" y="6" width="8" height="6" fill="#c77d42" />
+            <rect x="5" y="8" width="6" height="4" fill="#8b5437" />
+            <rect x="6" y="9" width="4" height="2" fill="#d4a857" />
+            <rect x="2" y="6" width="1" height="6" fill="#d4a857" />
+            <rect x="13" y="6" width="1" height="6" fill="#d4a857" />
+            <rect x="4" y="14" width="2" height="1" fill="#d4a857" />
+            <rect x="10" y="14" width="2" height="1" fill="#d4a857" />
+          </svg>
+        </div>
+      ) : (
         <div className="dialogue-portrait">
           <Image
-            src={`/game/portraits/${node.speaker}.webp`}
+            src={`/game/portraits/${speakerId}.webp`}
             alt=""
             width={112}
             height={112}
@@ -71,7 +89,7 @@ export function DialogueBox({
       )}
       <div className="dialogue-content">
         <h2 id="dialogue-speaker">{speakerLabel}</h2>
-        <p className="dialogue-text">{node.text}</p>
+        {node.text && <p className="dialogue-text">{node.text}</p>}
         {children}
         <div className="dialogue-choices">
           {node.choices.map((choice, index) => (

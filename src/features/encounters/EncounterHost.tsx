@@ -75,6 +75,10 @@ export function EncounterHost({
   };
   const node = getEncounterNode(state, context);
   if (!node) return null;
+  const dialogueNode = state.location === "camp" && campMessages.some((message) => message.role === "agent")
+    ? { ...node, text: "" }
+    : node;
+  const speakerOverride = node.speaker === "bag" && state.bagSource === "market" ? "milo" : undefined;
 
   const sendCampMessage = async (content: string, topic: CampTopic, email?: string) => {
     if (campPending || state.location !== "camp" || state.nodeId === "camp-handoff") return;
@@ -261,7 +265,7 @@ export function EncounterHost({
 
   return (
     <div className="encounter-layout">
-      <DialogueBox key={state.nodeId} node={node} onChoose={onChoose}>
+      <DialogueBox key={state.nodeId} node={dialogueNode} speakerOverride={speakerOverride} onChoose={onChoose}>
         {state.location === "oracle" && state.nodeId === "oracle-save" && state.deskMood && (
           <OracleSaveForm mood={state.deskMood} onEmailSubmitted={onEmailSubmitted} identityEmail={identityEmail} onForgetIdentity={onForgetIdentity} />
         )}

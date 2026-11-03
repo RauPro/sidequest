@@ -3,16 +3,11 @@
 import Image from "next/image";
 import { cartLines, cartTotal, maxQuantity } from "@/domain/cart";
 import { formatMoney, getProduct, productIds } from "@/domain/catalog";
+import { productCopy } from "@/features/products/product-copy";
 import type { CartStore } from "@/features/cart/store";
 import type { DemoOrder } from "@/domain/orders";
 import type { EncounterAction, SideView } from "./types";
 import { trackBagUpdated } from "@/features/klaviyo/track";
-
-  const companionTraits = {
-  ember: { subtitle: "Brave desk companion", traits: ["Brave", "Warm", "Fire"] },
-  moss: { subtitle: "Gentle desk companion", traits: ["Calm", "Soft", "Nature"] },
-  bolt: { subtitle: "Curious desk companion", traits: ["Curious", "Clever", "Technology"] },
-  } as const;
 
 export function SidePanel({
   side,
@@ -39,17 +34,17 @@ export function SidePanel({
   if (!side) return null;
   if (side.kind === "product") {
     const product = getProduct(side.productId);
-    const details = companionTraits[product.id];
+    const copy = productCopy[product.id];
     return (
       <aside className="rpg-frame side-panel product-side-panel" aria-label={`${product.name} details`}>
         <p className="side-panel-eyebrow">COMPANION</p>
         <h2>{product.name}</h2>
-        <p className="product-subtitle">{details.subtitle}</p>
+        <p className="product-subtitle">{copy.subtitle}</p>
         <div className="product-art-glow" style={{ background: `radial-gradient(circle, ${product.color}88 0%, transparent 70%)` }}>
           <Image src={`/game/products/${product.id}.png`} alt={`${product.name} companion`} width={160} height={160} className="game-image" />
         </div>
-        <ul className="product-traits">{details.traits.map((trait) => <li key={trait}>{trait}</li>)}</ul>
-        <p>{product.description}</p>
+        <ul className="product-traits">{copy.traits.map((trait) => <li key={trait}>{trait}</li>)}</ul>
+        <p className="product-description">{copy.description}</p>
         <p className="product-price">{formatMoney(product.priceMinor)}</p>
         <button type="button" className="rpg-btn rpg-btn--primary" onClick={() => onAction({ type: "add-to-bag", productId: product.id })}>
           Add to bag

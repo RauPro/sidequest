@@ -16,7 +16,8 @@
   --line: #40534c;
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-pixel), monospace; line-height: 1.35; font-size: 16px; }
+html, body { min-height: 100%; background: var(--ink); }
+body { margin: 0; color: var(--text); font-family: var(--font-pixel), monospace; line-height: 1.35; font-size: 16px; }
 a { color: inherit; text-underline-offset: 5px; }
 button, input { font: inherit; }
 button { min-height: 44px; padding: 9px 16px; border: 1px solid var(--line); border-radius: 4px; color: var(--text); background: #253b38; cursor: pointer; }
@@ -56,8 +57,8 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
 @media (max-width: 620px) { .products, .support-grid { grid-template-columns: 1fr; } main { padding: 24px 16px 40px; } .site-header { padding: 20px 16px; } .panel, .product { padding: 20px; } }
 
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-.game-shell { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; margin: 0; padding: 0; overflow: hidden; background: #101c1e; }
-.game-stage { position: absolute; inset: 0; }
+.game-shell { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; margin: 0; padding: 0; overflow: hidden; background: var(--ink); }
+.game-stage { position: fixed; inset: 0; z-index: 0; }
 .game-stage canvas { display: block; }
 .hud-top { position: absolute; top: 0; left: 0; right: 0; z-index: 20; display: flex; align-items: center; gap: 18px; padding: 8px 16px; background: rgba(15, 22, 38, .92); border-bottom: 2px solid #c79a55; color: #f3e3c0; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
 .hud-brand { font-family: Georgia, serif; color: #e0b45c; letter-spacing: .14em; }
@@ -179,7 +180,7 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
 .remembered-identity { margin: 0; color: var(--parchment-dim); font-size: 13px; }
 .remembered-identity button { padding: 0; border: 0; color: var(--gold); background: none; text-decoration: underline; cursor: pointer; font: inherit; }
 .camp-chat-panel { display: grid; gap: 10px; margin: 10px 0; }
-.camp-transcript { max-height: 180px; overflow-y: auto; padding: 8px 10px; border: 1px solid var(--gold-dim); background: rgb(15 20 40 / 72%); }
+.camp-transcript { max-height: 128px; overflow-y: auto; overscroll-behavior: contain; padding: 8px 10px; border: 1px solid var(--gold-dim); background: rgb(15 20 40 / 72%); }
 .camp-transcript p { margin: 4px 0; overflow-wrap: anywhere; }
 .camp-transcript strong { color: var(--gold); }
 .camp-chat-form, .camp-email-form { display: grid; gap: 8px; }
@@ -339,11 +340,11 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
   bottom: auto;
   left: 16px;
   z-index: 24;
-  width: 290px;
-  max-width: min(290px, calc(100vw - 32px));
+  width: 190px;
+  max-width: min(190px, calc(100vw - 32px));
   display: grid;
-  gap: 4px;
-  padding: 9px;
+  gap: 2px;
+  padding: 7px;
 }
 .places-menu::after { display: none; }
 .places-menu::before {
@@ -360,14 +361,13 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
   letter-spacing: .12em;
   background: none;
 }
-.place-button {
+.places-menu .place-button {
   width: 100%;
-  min-height: 42px;
+  min-height: 34px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 5px 8px;
+  flex-direction: row;
+  padding: 4px 7px;
   border: 1px solid transparent;
   border-radius: 2px;
   background: transparent;
@@ -375,6 +375,7 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
   font-family: inherit;
   font-size: 14px;
   text-align: left;
+  white-space: nowrap;
 }
 .place-button:hover, .place-button[aria-pressed="true"] { border-color: var(--gold-dim); background: var(--ink-2); color: var(--gold); }
 .location-name { font-weight: 700; }
@@ -398,14 +399,12 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
   position: absolute;
   right: 16px;
   bottom: 74px;
-  z-index: 22;
-  max-width: 370px;
+  z-index: 24;
+  max-width: 300px;
   margin: 0;
-  padding: 7px 10px;
-  border: 2px solid var(--gold-dim);
-  background: rgb(15 20 40 / 92%);
+  padding: 5px 9px;
   color: var(--parchment);
-  font-size: 14px;
+  font-size: 12px;
 }
 .encounter-layout {
   position: fixed;
@@ -435,6 +434,8 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
   background: var(--ink-2);
 }
 .dialogue-portrait img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.backpack-portrait { display: grid; place-items: center; }
+.backpack-portrait svg { display: block; width: 72px; height: 72px; image-rendering: pixelated; shape-rendering: crispEdges; }
 .dialogue-content { min-width: 0; flex: 1; }
 .dialogue-content h2, .side-panel h2 { margin: 0; color: var(--gold); font-size: 17px; line-height: 1.35; }
 .dialogue-text { margin: 8px 0 10px; color: var(--parchment); font-size: 15px; line-height: 1.4; }
@@ -511,13 +512,11 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
     padding: 6px;
   }
   .places-menu::before { display: none; }
-  .place-button { width: auto; flex: 0 0 auto; min-height: 38px; padding: 5px 8px; border-color: var(--gold-dim); }
-  .location-purpose { display: none; }
-  .places-menu[data-dialogue-open="true"] { display: none; }
+  .places-menu .place-button { width: auto; flex: 0 0 auto; min-height: 38px; padding: 5px 8px; border-color: var(--gold-dim); }
   .controls-bar { right: 8px; bottom: 8px; left: 8px; justify-content: center; padding: 7px; text-align: center; }
   .controls-keyboard { font-size: 14px; }
   .controls-bar kbd { display: none; }
-  .hint-bar { right: 8px; bottom: 126px; left: 8px; max-width: none; text-align: center; }
+  .hint-bar { right: 8px; bottom: 58px; left: 8px; max-width: none; text-align: center; font-size: 11px; }
   .encounter-layout { inset: 56px 0 0; display: flex; flex-direction: column-reverse; gap: 0; }
   .dialogue-box {
     position: absolute;
@@ -526,7 +525,7 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
     left: 0;
     width: 100%;
     min-height: 0;
-    max-height: 46vh;
+    max-height: 48vh;
     overflow-y: auto;
     gap: 9px;
     padding: 10px;
@@ -537,23 +536,47 @@ footer { max-width: 1180px; margin: auto; padding: 24px; border-top: 1px solid v
   .dialogue-text { font-size: 14px; }
   .dialogue-choices { grid-template-columns: 1fr; gap: 5px; }
   .dialogue-choices .rpg-choice { min-height: 40px; }
+  .camp-dialogue .camp-chat-panel { gap: 5px; margin: 5px 0; }
+  .camp-dialogue .camp-transcript { max-height: 68px; padding: 4px 6px; font-size: 12px; }
+  .camp-dialogue .camp-chat-form, .camp-dialogue .camp-email-form { gap: 4px; }
+  .camp-dialogue .camp-chat-form label, .camp-dialogue .camp-email-form label { font-size: 12px; }
+  .camp-dialogue .camp-chat-form input, .camp-dialogue .camp-email-form input { min-height: 36px; padding: 5px 7px; font-size: 12px; }
+  .camp-dialogue .camp-input-row button { min-width: 60px; min-height: 36px; padding: 4px 7px; font-size: 12px; }
+  .camp-dialogue .dialogue-choices { gap: 3px; }
+  .camp-dialogue .dialogue-choices .rpg-choice { min-height: 32px; padding: 3px 7px; font-size: 12px; }
   .side-panel {
     position: absolute;
     top: 8px;
     right: 8px;
-    bottom: calc(46vh + 10px);
+    bottom: calc(48vh + 10px);
     left: 8px;
     width: auto;
     max-height: 55vh;
     overflow-y: auto;
     padding: 10px;
   }
-  .product-art-glow { height: 100px; }
-  .product-art-glow img { width: 105px; height: 105px; }
-  .side-panel .rpg-btn { min-height: 42px; }
+  .product-side-panel { padding: 8px; }
+  .product-side-panel .product-art-glow { height: 96px; margin: 4px 0; }
+  .product-side-panel .product-art-glow img { width: 92px; height: 92px; }
+  .product-side-panel .product-description { display: none; }
+  .product-side-panel .side-panel-eyebrow { margin-bottom: 2px; font-size: 11px; }
+  .product-side-panel .product-subtitle { margin: 2px 0; font-size: 12px; }
+  .product-side-panel .product-traits { gap: 4px; margin: 4px 0; }
+  .product-side-panel .product-traits li { padding: 2px 5px; font-size: 11px; }
+  .product-side-panel .product-price { margin: 4px 0; font-size: 14px !important; }
+  .product-side-panel .rpg-btn { min-height: 34px; margin-top: 3px; padding: 4px 8px; font-size: 12px; }
+  .product-side-panel .product-carousel { gap: 5px; }
+  .product-side-panel .product-carousel .rpg-btn { min-height: 32px; }
+  .side-panel .rpg-btn { min-height: 38px; }
   .bag-line-actions .rpg-btn { min-height: 36px; }
   .legacy-encounter { top: 64px; right: 8px; left: 8px; width: auto; max-height: calc(100vh - 72px); }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+.game-shell, .game-shell *, .store-game-shell, .store-game-shell * {
+  font-family: var(--font-pixel), monospace;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "clig" 0, "calt" 0;
 }

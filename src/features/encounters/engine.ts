@@ -58,7 +58,15 @@ export function applyEncounterAction(
     case "browse-prev":
       return { state: { ...state, productId: rotateProduct(state.productId, -1) } };
     case "open-bag":
-      return { state: { ...state, location: "bag", nodeId: "bag", receipt: null } };
+      return {
+        state: {
+          ...state,
+          location: "bag",
+          bagSource: state.location === "market" ? "market" : "hud",
+          nodeId: "bag",
+          receipt: null,
+        },
+      };
     case "checkout":
       return { state: { ...state, nodeId: "market-receipt" }, effect: action };
     case "close":
